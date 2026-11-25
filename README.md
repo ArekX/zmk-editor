@@ -49,6 +49,10 @@ ZMK Editor is a new implementation and does not reuse keymap-editor's source cod
 
 ![Editing a combo](docs/combos.png)
 
+![Picking Ctrl + Shift + Q on the key picker keyboard](docs/picker.png)
+
+![Editing a home row mod hold-tap on the Behaviors tab](docs/behaviors.png)
+
 ## Getting started
 
 ### Build
