@@ -39,6 +39,11 @@ export interface Commit {
   subject: string
 }
 
+export interface RemoteCheck {
+  status: GitStatus
+  incoming: Commit[]
+}
+
 export interface Layer {
   id: string
   label?: string

@@ -64,6 +64,7 @@ func (s *server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/repos/{id}/branches", s.gitBranches)
 	mux.HandleFunc("POST /api/repos/{id}/checkout", s.gitCheckout)
 	mux.HandleFunc("POST /api/repos/{id}/fetch", s.gitFetch)
+	mux.HandleFunc("POST /api/repos/{id}/remote-check", s.gitRemoteCheck)
 	mux.HandleFunc("POST /api/repos/{id}/pull", s.gitPull)
 	mux.HandleFunc("POST /api/repos/{id}/push", s.gitPush)
 	mux.HandleFunc("POST /api/repos/{id}/commit", s.gitCommit)

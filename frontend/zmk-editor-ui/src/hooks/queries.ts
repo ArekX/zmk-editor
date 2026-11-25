@@ -10,6 +10,9 @@ export const keys = {
   repo: (id: number) => ["repo", id] as const,
   status: (id: number) => ["repo", id, "status"] as const,
   diff: (id: number) => ["repo", id, "diff"] as const,
+  // Not under ["repo", id]: saves and git actions invalidate that prefix,
+  // and the remote check should only run when a repository is opened.
+  remoteCheck: (id: number) => ["remote-check", id] as const,
   log: (id: number) => ["repo", id, "log"] as const,
   branches: (id: number) => ["repo", id, "branches"] as const,
   keymap: (id: number, path: string) => ["repo", id, "keymap", path] as const,

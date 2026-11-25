@@ -19,6 +19,7 @@ All JSON. Errors are `{"error": string, "code"?: string}`. Non-GET requests need
 | GET, PATCH, DELETE | /api/repos/{id} | details incl. keymaps; PATCH `{name?, default_keymap?}`; DELETE `?delete_files=1` removes a managed clone |
 | GET | /api/repos/{id}/status, /diff, /log, /branches | git state |
 | POST | /api/repos/{id}/fetch, /pull `{rebase}`, /push, /commit `{message, push}`, /discard `{paths?}`, /checkout `{branch, create}` | git operations |
+| POST | /api/repos/{id}/remote-check | fetch origin, return `{status, incoming}` (commits on upstream missing locally, max 20) |
 | GET | /api/repos/{id}/keymaps | `*.keymap` files (config/ first) |
 | GET, PUT | /api/repos/{id}/keymap?path= | load document; save `{hash, keymap}` (409 `conflict` on hash mismatch) |
 | POST | /api/repos/{id}/keymap/preview?path= | `{before, after}` text without writing |

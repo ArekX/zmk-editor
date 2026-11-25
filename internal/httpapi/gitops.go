@@ -210,3 +210,29 @@ func (s *server) gitDiscard(w http.ResponseWriter, r *http.Request) {
 	}
 	s.gitStatus(w, r)
 }
+
+// gitRemoteCheck fetches origin and reports the commits the current branch
+// is missing, so the UI can offer a pull when a repository is opened.
+func (s *server) gitRemoteCheck(w http.ResponseWriter, r *http.Request) {
+	repo, ok := s.loadRepo(w, r)
+	if !ok {
+		return
+	}
+	unlock := s.Git.Lock(repo.LocalPath)
+	defer unlock()
+	if err := s.Git.Fetch(r.Context(), repo.LocalPath); err != nil {
+		s.fail(w, err)
+		return
+	}
+	st, err := s.Git.Status(r.Context(), repo.LocalPath)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	incoming, err := s.Git.Incoming(r.Context(), repo.LocalPath, 20)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"status": st, "incoming": incoming})
+}

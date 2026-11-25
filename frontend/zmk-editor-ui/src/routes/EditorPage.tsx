@@ -10,6 +10,7 @@ import { CombosPanel } from "@/components/combos/CombosPanel"
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States"
 import { EditorActions, EditorBreadcrumb } from "@/components/editor/EditorHeader"
 import { LayoutDialog } from "@/components/editor/LayoutDialog"
+import { PullPromptDialog } from "@/components/editor/PullPromptDialog"
 import { FirmwareSheet } from "@/components/firmware/FirmwareSheet"
 import { LayersPanel } from "@/components/keyboard/LayersPanel"
 import { TopBar } from "@/components/shell/TopBar"
@@ -18,6 +19,7 @@ import { keys, useKeymapDoc, useRepo, useStatus } from "@/hooks/queries"
 import { useEditorShortcuts, useUnloadWarning } from "@/hooks/useEditorShortcuts"
 import { useGitActions } from "@/hooks/useGitActions"
 import { useKeymapDraft } from "@/hooks/useKeymapDraft"
+import { useRemoteCheck } from "@/hooks/useRemoteCheck"
 import { useSaveKeymap } from "@/hooks/useSaveKeymap"
 import { useCatalog } from "@/hooks/useZmkData"
 
@@ -41,6 +43,11 @@ export function EditorPage() {
   const [layoutOpen, setLayoutOpen] = useState(false)
   const [warningsHidden, setWarningsHidden] = useState(false)
   const [warningsOpen, setWarningsOpen] = useState(false)
+  const remote = useRemoteCheck(id)
+  // The prompt shows once per check result; "Not now" hides it until the
+  // repository is opened again.
+  const [dismissedCheck, setDismissedCheck] = useState(0)
+  const pullPromptOpen = !!remote.data && remote.data.status.behind > 0 && dismissedCheck !== remote.dataUpdatedAt
 
   const tab = (params.get("tab") as Tab) ?? "layers"
   const activeLayer = Number(params.get("layer") ?? 0)
@@ -63,7 +70,10 @@ export function EditorPage() {
   const doSave = useCallback(() => {
     if (draft.dirty && draft.keymap && !save.isPending) save.mutate(draft.keymap)
   }, [draft.dirty, draft.keymap, save])
-  const shortcuts = useMemo(() => ({ save: doSave, undo: draft.undo, redo: draft.redo }), [doSave, draft.undo, draft.redo])
+  const shortcuts = useMemo(
+    () => ({ save: doSave, undo: draft.undo, redo: draft.redo }),
+    [doSave, draft.undo, draft.redo],
+  )
   useEditorShortcuts(shortcuts)
   useUnloadWarning(draft.dirty)
 
@@ -164,9 +174,8 @@ export function EditorPage() {
           </div>
         ) : doc.data && draft.keymap?.layers.length === 0 ? (
           <EmptyState icon={File01Icon} title="No editable layers in this keymap">
-            The editor reads layers written as devicetree nodes inside the zmk,keymap node. This file defines
-            them another way, most likely through preprocessor macros such as ZMK_LAYER, which are left as they
-            are.
+            The editor reads layers written as devicetree nodes inside the zmk,keymap node. This file defines them
+            another way, most likely through preprocessor macros such as ZMK_LAYER, which are left as they are.
           </EmptyState>
         ) : doc.data && draft.keymap && catalog ? (
           tab === "combos" ? (
@@ -186,6 +195,15 @@ export function EditorPage() {
         ) : null}
       </main>
 
+      {remote.data && (
+        <PullPromptDialog
+          check={remote.data}
+          open={pullPromptOpen}
+          onOpenChange={(o) => !o && setDismissedCheck(remote.dataUpdatedAt)}
+          git={git}
+          dirty={draft.dirty}
+        />
+      )}
       <FirmwareSheet repo={repo.data} open={firmwareOpen} onOpenChange={setFirmwareOpen} />
       {doc.data && <LayoutDialog repoId={id} doc={doc.data} open={layoutOpen} onOpenChange={setLayoutOpen} />}
     </div>

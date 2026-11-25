@@ -158,6 +158,23 @@ func (r *Runner) Log(ctx context.Context, dir string, n int) ([]Commit, error) {
 	if err != nil {
 		return nil, err
 	}
+	return parseLog(out), nil
+}
+
+// Incoming returns up to n commits on the upstream branch that HEAD does
+// not have yet (run Fetch first). No upstream means no incoming commits.
+func (r *Runner) Incoming(ctx context.Context, dir string, n int) ([]Commit, error) {
+	if _, err := r.Run(ctx, dir, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"); err != nil {
+		return []Commit{}, nil
+	}
+	out, err := r.Run(ctx, dir, "log", "-n", strconv.Itoa(n), "--format=%H%x1f%h%x1f%an%x1f%cI%x1f%s", "HEAD..@{upstream}")
+	if err != nil {
+		return nil, err
+	}
+	return parseLog(out), nil
+}
+
+func parseLog(out string) []Commit {
 	commits := []Commit{}
 	for _, line := range strings.Split(out, "\n") {
 		f := strings.Split(line, "\x1f")
@@ -166,5 +183,5 @@ func (r *Runner) Log(ctx context.Context, dir string, n int) ([]Commit, error) {
 		}
 		commits = append(commits, Commit{SHA: f[0], Short: f[1], Author: f[2], Date: f[3], Subject: f[4]})
 	}
-	return commits, nil
+	return commits
 }

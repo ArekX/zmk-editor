@@ -29,6 +29,7 @@ ZMK Editor is a new implementation and does not reuse keymap-editor's source cod
 - **Combos.** Click keys on the keyboard to set the positions, then pick the binding, layers, timeout and other options.
 - **Your own behaviors.** Hold-taps, macros, tap-dances and mod-morphs defined in the keymap show up in the pickers with the right parameters.
 - **Physical layouts** from a layout JSON next to the keymap (keymap-editor / QMK `info.json` style), a ZMK `zmk,physical-layout` anywhere in the repository, a layout you paste in, or a grid generated from the keymap itself.
+- **Never edit a stale keymap.** Opening a repository fetches from the remote and, if there are new commits, shows them and offers to pull first.
 - **Git built in.** Diff, commit, commit and push, pull (fast-forward or rebase), fetch, switch and create branches, discard changes.
 - **Firmware.** See the GitHub Actions builds of your branch, download artifacts, save `.uf2` files, or copy one straight onto a keyboard in bootloader mode. Trigger a new build from the app.
 - Undo/redo, ⌘S / Ctrl+S to save, dark and light themes.

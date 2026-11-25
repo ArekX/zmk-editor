@@ -13,6 +13,8 @@ Sticky top bar: logo, breadcrumb (repository switcher / keymap switcher / branch
 
 ## Editor
 
+Opening a repository checks origin for new commits (`useRemoteCheck`) and shows the pull prompt dialog when the branch is behind (see [git-integration.md](git-integration.md)).
+
 - **Layers**: layer list (select, double-click rename, add, duplicate as new, delete with a renumbering warning), keyboard canvas scaled to fit, changed keys marked with a dot. Clicking a key opens the binding editor popover: behavior picker (grouped: keys and layers, mouse, system, defined in this keymap), one field per parameter (keycode picker with modifier chips and press-a-key capture, layer picker, command picker, enum picker, free text), the raw devicetree text, and Transparent/None shortcuts. Sensor bindings render as knobs under the keyboard.
 - **Combos**: list, keyboard with the base layer dimmed and combo keys highlighted (click toggles), form for name, binding, layers, timeout, prior idle, slow release.
 - **Behaviors**: custom behaviors with their source, conditional layers, built-in reference.

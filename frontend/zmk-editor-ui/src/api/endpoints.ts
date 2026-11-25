@@ -7,6 +7,7 @@ import type {
   Device,
   FirmwareDownload,
   GitStatus,
+  RemoteCheck,
   Keymap,
   KeymapDocument,
   RawKeycode,
@@ -38,6 +39,7 @@ export const endpoints = {
   checkout: (id: number, branch: string, create: boolean) =>
     post<GitStatus>(`/api/repos/${id}/checkout`, { branch, create }),
   fetch: (id: number) => post<GitStatus>(`/api/repos/${id}/fetch`),
+  remoteCheck: (id: number) => post<RemoteCheck>(`/api/repos/${id}/remote-check`),
   pull: (id: number, rebase = false) =>
     post<{ output: string; status: GitStatus }>(`/api/repos/${id}/pull`, { rebase }),
   push: (id: number) => post<GitStatus>(`/api/repos/${id}/push`),
