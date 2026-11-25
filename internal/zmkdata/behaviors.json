@@ -1,0 +1,460 @@
+[
+  {
+    "code": "&kp",
+    "name": "Key Press",
+    "params": [
+      "code"
+    ],
+    "description": "Send a keycode on press",
+    "includes": [
+      "#include <dt-bindings/zmk/keys.h>"
+    ]
+  },
+  {
+    "code": "&mt",
+    "name": "Mod-Tap",
+    "params": [
+      "mod",
+      "code"
+    ],
+    "description": "Modifier when held, key when tapped"
+  },
+  {
+    "code": "&lt",
+    "name": "Layer-Tap",
+    "params": [
+      "layer",
+      "code"
+    ],
+    "description": "Layer when held, key when tapped"
+  },
+  {
+    "code": "&mo",
+    "name": "Momentary Layer",
+    "params": [
+      "layer"
+    ],
+    "description": "Activate a layer while held"
+  },
+  {
+    "code": "&to",
+    "name": "To Layer",
+    "params": [
+      "layer"
+    ],
+    "description": "Switch to a layer, deactivating all others but the default"
+  },
+  {
+    "code": "&tog",
+    "name": "Toggle Layer",
+    "params": [
+      "layer"
+    ],
+    "description": "Toggle a layer on or off"
+  },
+  {
+    "code": "&sl",
+    "name": "Sticky Layer",
+    "params": [
+      "layer"
+    ],
+    "description": "Activate a layer for the next key press"
+  },
+  {
+    "code": "&sk",
+    "name": "Sticky Key",
+    "params": [
+      "code"
+    ],
+    "description": "Hold a key until the next key press"
+  },
+  {
+    "code": "&kt",
+    "name": "Key Toggle",
+    "params": [
+      "code"
+    ],
+    "description": "Toggle a key between pressed and released"
+  },
+  {
+    "code": "&trans",
+    "name": "Transparent",
+    "params": [],
+    "description": "Pass the press to the next active layer below"
+  },
+  {
+    "code": "&none",
+    "name": "None",
+    "params": [],
+    "description": "Do nothing"
+  },
+  {
+    "code": "&caps_word",
+    "name": "Caps Word",
+    "params": [],
+    "description": "Shift letters until a word-breaking key"
+  },
+  {
+    "code": "&key_repeat",
+    "name": "Key Repeat",
+    "params": [],
+    "description": "Repeat the last sent keycode"
+  },
+  {
+    "code": "&gresc",
+    "name": "Grave Escape",
+    "params": [],
+    "description": "Escape, or grave with Shift or GUI held"
+  },
+  {
+    "code": "&bt",
+    "name": "Bluetooth",
+    "params": [
+      "command"
+    ],
+    "description": "Bluetooth profile management",
+    "includes": [
+      "#include <dt-bindings/zmk/bt.h>"
+    ],
+    "commands": [
+      {
+        "code": "BT_CLR",
+        "description": "Clear bond information between the keyboard and host for the selected profile."
+      },
+      {
+        "code": "BT_NXT",
+        "description": "Switch to the next profile, cycling through to the first one when the end is reached."
+      },
+      {
+        "code": "BT_PRV",
+        "description": "Switch to the previous profile, cycling through to the last one when the beginning is reached."
+      },
+      {
+        "code": "BT_SEL",
+        "description": "Select the 0-indexed profile by number. Please note: this definition must include a number as an argument in the keymap to work correctly. eg. BT_SEL 0",
+        "additionalParams": [
+          {
+            "name": "index",
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "code": "BT_DISC",
+        "description": "Disconnect from the given profile index",
+        "additionalParams": [
+          {
+            "name": "index",
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "&out",
+    "name": "Output Selection",
+    "params": [
+      "command"
+    ],
+    "description": "Choose USB or Bluetooth output",
+    "includes": [
+      "#include <dt-bindings/zmk/outputs.h>"
+    ],
+    "commands": [
+      {
+        "code": "OUT_BLE",
+        "description": "Prefer sending to USB"
+      },
+      {
+        "code": "OUT_USB",
+        "description": "Prefer sending to the current bluetooth profile"
+      },
+      {
+        "code": "OUT_TOG",
+        "description": "Toggle between USB and BLE"
+      }
+    ]
+  },
+  {
+    "code": "&rgb_ug",
+    "name": "RGB Underglow",
+    "params": [
+      "command"
+    ],
+    "description": "Control RGB underglow",
+    "includes": [
+      "#include <dt-bindings/zmk/rgb.h>"
+    ],
+    "commands": [
+      {
+        "code": "RGB_TOG",
+        "description": "Toggles the RGB feature on and off"
+      },
+      {
+        "code": "RGB_HUI",
+        "description": "Increases the hue of the RGB feature"
+      },
+      {
+        "code": "RGB_HUD",
+        "description": "Decreases the hue of the RGB feature"
+      },
+      {
+        "code": "RGB_SAI",
+        "description": "Increases the saturation of the RGB feature"
+      },
+      {
+        "code": "RGB_SAD",
+        "description": "Decreases the saturation of the RGB feature"
+      },
+      {
+        "code": "RGB_BRI",
+        "description": "Increases the brightness of the RGB feature"
+      },
+      {
+        "code": "RGB_BRD",
+        "description": "Decreases the brightness of the RGB feature"
+      },
+      {
+        "code": "RGB_SPI",
+        "description": "Increases the speed of the RGB feature effect's animation"
+      },
+      {
+        "code": "RGB_SPD",
+        "description": "Decreases the speed of the RGB feature effect's animation"
+      },
+      {
+        "code": "RGB_EFF",
+        "description": "Cycles the RGB feature's effect forwards"
+      },
+      {
+        "code": "RGB_EFR",
+        "description": "Cycles the RGB feature's effect reverse"
+      }
+    ]
+  },
+  {
+    "code": "&bl",
+    "name": "Backlight",
+    "params": [
+      "command"
+    ],
+    "description": "Control backlight",
+    "includes": [
+      "#include <dt-bindings/zmk/backlight.h>"
+    ],
+    "commands": [
+      {
+        "code": "BL_ON",
+        "description": "Turn on backlight"
+      },
+      {
+        "code": "BL_OFF",
+        "description": "Turn off backlight"
+      },
+      {
+        "code": "BL_TOG",
+        "description": "Toggle backlight on and off"
+      },
+      {
+        "code": "BL_INC",
+        "description": "Increase brightness"
+      },
+      {
+        "code": "BL_DEC",
+        "description": "Decrease brightness"
+      },
+      {
+        "code": "BL_CYCLE",
+        "description": "Cycle brightness"
+      },
+      {
+        "code": "BL_SET",
+        "description": "Set a specific brightness",
+        "additionalParams": [
+          {
+            "name": "brightness",
+            "type": "integer",
+            "enum": [
+              0,
+              10,
+              20,
+              30,
+              40,
+              50,
+              60,
+              70,
+              80,
+              90,
+              100
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "&ext_power",
+    "name": "External Power",
+    "params": [
+      "command"
+    ],
+    "description": "Control external power",
+    "includes": [
+      "#include <dt-bindings/zmk/ext_power.h>"
+    ],
+    "commands": [
+      {
+        "code": "EP_ON",
+        "description": "Enable the external power"
+      },
+      {
+        "code": "EP_OFF",
+        "description": "Disable the external power"
+      },
+      {
+        "code": "EP_TOG",
+        "description": "Toggle the external power"
+      }
+    ]
+  },
+  {
+    "code": "&mkp",
+    "name": "Mouse Button",
+    "params": [
+      "command"
+    ],
+    "description": "Press a mouse button",
+    "includes": [
+      "#include <dt-bindings/zmk/pointing.h>"
+    ],
+    "commands": [
+      {
+        "code": "LCLK",
+        "description": "Left click"
+      },
+      {
+        "code": "RCLK",
+        "description": "Right click"
+      },
+      {
+        "code": "MCLK",
+        "description": "Middle click"
+      },
+      {
+        "code": "MB4",
+        "description": "Mouse button 4 (back)"
+      },
+      {
+        "code": "MB5",
+        "description": "Mouse button 5 (forward)"
+      }
+    ]
+  },
+  {
+    "code": "&mmv",
+    "name": "Mouse Move",
+    "params": [
+      "command"
+    ],
+    "description": "Move the pointer",
+    "includes": [
+      "#include <dt-bindings/zmk/pointing.h>"
+    ],
+    "commands": [
+      {
+        "code": "MOVE_UP",
+        "description": "Move up"
+      },
+      {
+        "code": "MOVE_DOWN",
+        "description": "Move down"
+      },
+      {
+        "code": "MOVE_LEFT",
+        "description": "Move left"
+      },
+      {
+        "code": "MOVE_RIGHT",
+        "description": "Move right"
+      }
+    ]
+  },
+  {
+    "code": "&msc",
+    "name": "Mouse Scroll",
+    "params": [
+      "command"
+    ],
+    "description": "Scroll",
+    "includes": [
+      "#include <dt-bindings/zmk/pointing.h>"
+    ],
+    "commands": [
+      {
+        "code": "SCRL_UP",
+        "description": "Scroll up"
+      },
+      {
+        "code": "SCRL_DOWN",
+        "description": "Scroll down"
+      },
+      {
+        "code": "SCRL_LEFT",
+        "description": "Scroll left"
+      },
+      {
+        "code": "SCRL_RIGHT",
+        "description": "Scroll right"
+      }
+    ]
+  },
+  {
+    "code": "&sys_reset",
+    "name": "Reset",
+    "params": [],
+    "description": "Reset the keyboard"
+  },
+  {
+    "code": "&bootloader",
+    "name": "Bootloader",
+    "params": [],
+    "description": "Reboot into the bootloader for flashing"
+  },
+  {
+    "code": "&soft_off",
+    "name": "Soft Off",
+    "params": [],
+    "description": "Turn the keyboard off until woken"
+  },
+  {
+    "code": "&studio_unlock",
+    "name": "Studio Unlock",
+    "params": [],
+    "description": "Unlock ZMK Studio"
+  },
+  {
+    "code": "&inc_dec_kp",
+    "name": "Encoder Key Press",
+    "params": [
+      "code",
+      "code"
+    ],
+    "description": "Send one key on clockwise and another on counter-clockwise rotation",
+    "sensor": true
+  }
+]
