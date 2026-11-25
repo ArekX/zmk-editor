@@ -1,6 +1,7 @@
 import {
   ArrowDown01Icon,
   ArrowDown02Icon,
+  ArrowUp02Icon,
   Delete02Icon,
   FloppyDiskIcon,
   GridViewIcon,
@@ -11,11 +12,13 @@ import {
   Undo03Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { useState } from "react"
 import { useNavigate } from "react-router"
 
 import type { GitStatus, Repository } from "@/api/types"
 import { Spinner } from "@/components/common/Spinner"
 import { BranchMenu } from "@/components/editor/BranchMenu"
+import { PushDialog } from "@/components/editor/PushDialog"
 import { BuildButton } from "@/components/firmware/BuildButton"
 import { Button } from "@/components/ui/button"
 import {
@@ -154,7 +157,14 @@ export function EditorActions({
   onOpenLayout: () => void
 }) {
   const behind = status?.behind ?? 0
-  const pullLabel = draft.dirty ? "Save or discard edits before pulling" : behind ? `Pull ${behind} commit${behind === 1 ? "" : "s"}` : "Pull"
+  const [pushOpen, setPushOpen] = useState(false)
+  // Saved edits not committed yet, or commits not pushed yet.
+  const pending = (status?.files.length ?? 0) + (status?.ahead ?? 0)
+  const pullLabel = draft.dirty
+    ? "Save or discard edits before pulling"
+    : behind
+      ? `Pull ${behind} commit${behind === 1 ? "" : "s"}`
+      : "Pull"
   return (
     <>
       <IconAction label="Undo (⌘Z)" icon={Undo03Icon} onClick={draft.undo} disabled={!draft.canUndo} />
@@ -170,7 +180,9 @@ export function EditorActions({
             >
               {git.pull.isPending ? <Spinner /> : <HugeiconsIcon icon={ArrowDown02Icon} />}
               Pull
-              {behind > 0 && <span className="bg-brand text-brand-foreground rounded-full px-1.5 text-[10px]">{behind}</span>}
+              {behind > 0 && (
+                <span className="bg-brand text-brand-foreground rounded-full px-1.5 text-[10px]">{behind}</span>
+              )}
             </Button>
           </span>
         </TooltipTrigger>
@@ -189,6 +201,30 @@ export function EditorActions({
         </TooltipTrigger>
         <TooltipContent>Write changes to the keymap file (⌘S)</TooltipContent>
       </Tooltip>
+      {status && pending > 0 && !draft.dirty && (
+        <>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={git.commit.isPending || git.push.isPending}
+                onClick={() => setPushOpen(true)}
+              >
+                {git.commit.isPending || git.push.isPending ? <Spinner /> : <HugeiconsIcon icon={ArrowUp02Icon} />}
+                Push
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {status.files.length > 0
+                ? "Commit the saved changes and push them"
+                : `Push ${status.ahead} local commit${status.ahead === 1 ? "" : "s"}`}
+            </TooltipContent>
+          </Tooltip>
+          {/* Remounted on open so the message starts prefilled again. */}
+          {pushOpen && <PushDialog open onOpenChange={setPushOpen} status={status} git={git} />}
+        </>
+      )}
       <BuildButton repo={repo} onOpen={onOpenFirmware} />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

@@ -126,11 +126,12 @@ export function LayersPanel({
                   variant={sel.swapping ? "default" : "outline"}
                   onClick={() => (sel.swapping ? sel.cancelSwap() : sel.startSwap())}
                 >
-                  <HugeiconsIcon icon={ShuffleIcon} /> {sel.swapping ? "Cancel swap" : "Swap keys"}
+                  <HugeiconsIcon icon={ShuffleIcon} /> {sel.swapping ? "Stop swapping" : "Swap keys"}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                Click a key, then the key to swap it with (any layer). Or drag a key onto another.
+                Click a key, then the key to swap it with (any layer). Stays on for more swaps until you turn it off. Or
+                drag a key onto another.
               </TooltipContent>
             </Tooltip>
             <ExportMenu keymap={keymap} layout={layout} catalog={catalog} layerIndex={layerIndex} />
@@ -144,10 +145,10 @@ export function LayersPanel({
               <span className="flex-1">
                 {sel.swapSource
                   ? `Swapping key ${sel.swapSource.key} on ${keymap.layers[sel.swapSource.layer]?.name}: click the key to swap it with. Switch layers to swap across layers.`
-                  : "Click the first key to swap."}
+                  : "Swap mode: click a key, then the key to swap it with. Stays on until you stop it."}
               </span>
               <button className="underline" onClick={sel.cancelSwap}>
-                Cancel (Esc)
+                Stop swapping (Esc)
               </button>
             </div>
           ) : sel.selected.length > 1 ? (

@@ -1,6 +1,6 @@
 # ZMK Editor
 
-A visual editor for [ZMK](https://zmk.dev) keymaps that runs on your own machine as a single executable. It works directly on your zmk-config **git repositories**: edit layers and combos, commit and push, then download or flash the firmware that GitHub Actions built.
+A visual editor for [ZMK](https://zmk.dev) keymaps that runs on your own machine as a single executable. It works directly on your zmk-config **git repositories**: edit layers and combos, commit and push, then flash the firmware GitHub Actions built straight onto your keyboard over USB, all from the app.
 
 ![Editing the base layer of a Corne keymap](docs/layers.png)
 
@@ -16,7 +16,7 @@ What changes:
 | --- | --- |
 | Hosted web app with a GitHub App integration | Local app, one executable, your data stays on your machine |
 | One GitHub repository at a time through the GitHub API | Any number of repositories, cloned over SSH/HTTPS or used in place, with real `git` (pull, push, branches, diff) |
-| Firmware builds are out of scope | Lists GitHub Actions builds, downloads artifacts, flashes `.uf2` files to a keyboard in bootloader mode |
+| Firmware builds are out of scope | Lists GitHub Actions builds, downloads artifacts, and flashes the keyboard over USB in one click |
 | Edits behaviors, macros, combos and conditional layers | The same, plus layer reordering with renumbering, key swaps across layers, multi-select, copy/paste and image export |
 | JavaScript (Node + React) | Go backend with an embedded React frontend |
 
@@ -26,8 +26,15 @@ ZMK Editor is a new implementation and does not reuse keymap-editor's source cod
 
 - **Works on your repositories.** Add as many zmk-config repositories as you like: clone over SSH or HTTPS, or open a checkout you already have. Git runs with your own keys, credentials and identity.
 - **Edits the `.keymap` file itself.** Only the bindings, names and combos you change are rewritten. Comments, formatting, includes, macros and behavior definitions stay exactly as they were, and a save that changes nothing leaves the file byte-for-byte identical.
-- **Layers.** Add, rename, duplicate, delete and reorder layers (drag them); references such as `&mo 2`, layer-taps, combo layers, conditional layers and `#define NAV 2` are renumbered for you. Click a key to change it: pick the key on a QWERTY keyboard with modifier toggles, or type it in ZMK syntax (`LC(LS(A))`), or search, or press it. Layer names instead of numbers, hold/tap legends, colour swatches for `RGB_COLOR_HSB(...)`, encoder (sensor) bindings.
-- **Move keys around.** Swap two keys, even across layers (Swap keys, then click both), drag a key onto another to swap it (⌥ to copy), select several keys with Shift or ⌘ and set them at once, copy and paste with ⌘C / ⌘V, and revert a changed key to how it was.
+- **Layers.** Add, rename, duplicate, delete and reorder layers (drag them); references such as `&mo 2`, layer-taps, combo layers, conditional layers and `#define NAV 2` are renumbered for you. Layer names instead of numbers, hold/tap legends, symbols on keycaps (`!`, `@`, `#` rather than `EXCL`, `AT`, `HASH`), colour swatches for `RGB_COLOR_HSB(...)`, encoder (sensor) bindings.
+- **Pick keys the easy way.** Click a key to change it, then:
+  - pick on a full-size keyboard (with numpad and media keys) where Ctrl, Shift, Alt and GUI work like real modifiers: Ctrl + Shift + A becomes `LC(LS(A))`;
+  - find every other ZMK key code (F13-F24, international, media, app launch keys, ...) on the "Other keys" tab, with a filter;
+  - search the dropdown, or press the key or key combination on your own keyboard to capture it;
+  - select several normal keys at once to make a macro that presses them together;
+  - hold keys take modifier combinations too (`&mt LS(LCTRL) A`).
+  The five behaviors you used last sit under the behavior picker as shortcuts. The ZMK binding field shows the exact devicetree text and can be edited directly; it is checked before it is applied.
+- **Move keys around.** Swap keys, even across layers: turn on Swap keys and click pairs, it stays on until you stop it. Drag a key onto another to swap it (⌥ to copy), select several keys with Shift or ⌘ and set them at once, copy and paste with ⌘C / ⌘V or the Copy and Paste buttons, and revert a changed key to how it was (a swapped key reverts together with its partner).
 - **Combos.** Click keys on the keyboard to set the positions, then pick the binding, layers, timeout and other options.
 - **Behaviors and macros.** Create and edit hold-taps (flavor, tapping term, quick tap, positional hold-trigger keys picked on the keyboard, ...), mod-morphs, tap-dances, sticky keys and macros, including macros that take parameters. Change the settings of built-ins such as `&mt` or `&sk`. Renaming a behavior updates every key that uses it.
 - **Conditional layers** (tri-layer): create and edit them.
@@ -35,8 +42,9 @@ ZMK Editor is a new implementation and does not reuse keymap-editor's source cod
 - **Export** a layer or the whole keymap as SVG or PNG.
 - **Build checks.** After a save the editor warns about things that would break the firmware build (unknown behaviors, wrong parameter counts, layers out of range).
 - **Never edit a stale keymap.** Opening a repository fetches from the remote and, if there are new commits, shows them and offers to pull first.
-- **Git built in.** Diff, commit, commit and push, pull (fast-forward or rebase), fetch, switch and create branches, discard changes.
-- **Firmware.** See the GitHub Actions builds of your branch, download artifacts, save `.uf2` files, or copy one straight onto a keyboard in bootloader mode. Trigger a new build from the app.
+- **Git built in.** Diff, commit, commit and push, pull (fast-forward or rebase), fetch, switch and create branches, discard changes. After saving, a Push button in the top bar commits (message prefilled) and pushes in one step.
+- **Firmware.** See the GitHub Actions builds of your branch, download artifacts, save `.uf2` files, and trigger a new build from the app.
+- **Easy flashing over USB.** Connect the keyboard (or one half) with a USB cable and put it in bootloader mode (usually a double tap on reset). The app detects the bootloader drive; click Flash next to the `.uf2` for that half and it is copied onto the keyboard, which restarts with the new firmware. No downloading, unzipping or dragging files in a file manager.
 - Undo/redo, ⌘S / Ctrl+S to save, dark and light themes.
 
 ![Editing a combo](docs/combos.png)
@@ -78,10 +86,10 @@ The server only listens on loopback and only answers requests addressed to `loca
 ## How it works
 
 1. **Add a repository** on the start page. The editor finds the `.keymap` files in it (those under `config/` first).
-2. **Edit** layers and combos. Changes stay in the editor until you save; undo and redo work across all of them.
+2. **Edit** layers, combos and behaviors. Changes stay in the editor until you save; undo and redo work across all of them.
 3. **Save** writes the changes into the `.keymap` file in the working tree. If the file changed on disk since you opened it (a pull, another editor), the save is refused instead of overwriting it.
-4. **Commit and push** from the Changes tab, where you can review the diff first.
-5. **Get the firmware** from the Firmware panel once GitHub Actions has built your push: download it, or flash it straight to a keyboard half that is in bootloader mode.
+4. **Commit and push** with the Push button in the top bar, or from the Changes tab, where you can review the diff first.
+5. **Flash the firmware** from the Firmware panel once GitHub Actions has built your push: connect a keyboard half over USB, double-tap reset to enter the bootloader, and click Flash next to that half's `.uf2`. Repeat for the other half. You can also just download the files.
 
 ### Physical layouts
 

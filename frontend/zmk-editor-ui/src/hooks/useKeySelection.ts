@@ -67,7 +67,8 @@ export function useKeySelection({
         }
         const from = swapSource
         update((km) => swapBindings(km, from, { layer, key }))
-        cancelSwap()
+        // Stay in swap mode for the next pair until it is turned off.
+        setSwapSource(null)
         return
       }
       if (e.shiftKey || e.metaKey || e.ctrlKey) {
@@ -76,7 +77,7 @@ export function useKeySelection({
       }
       setSelected((s) => (s.length === 1 && s[0] === key ? [] : [key]))
     },
-    [swapping, swapSource, layer, update, cancelSwap],
+    [swapping, swapSource, layer, update],
   )
 
   const onDragKey = useCallback(
@@ -132,7 +133,8 @@ export function useKeySelection({
       if (inTextField(e.target)) return
       const mod = e.metaKey || e.ctrlKey
       if (e.key === "Escape") {
-        if (swapping) cancelSwap()
+        if (swapping && swapSource) setSwapSource(null)
+        else if (swapping) cancelSwap()
         else if (selected.length > 1) clear()
         return
       }
@@ -150,7 +152,7 @@ export function useKeySelection({
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [swapping, selected, bindings, copy, paste, clear, cancelSwap, setSelection])
+  }, [swapping, swapSource, selected, bindings, copy, paste, clear, cancelSwap, setSelection])
 
   return {
     selected,
