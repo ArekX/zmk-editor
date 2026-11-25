@@ -65,28 +65,51 @@ export interface Combo {
   read_only: boolean
 }
 
+export type BehaviorKind = "hold-tap" | "macro" | "tap-dance" | "mod-morph" | "sticky-key" | "sensor" | "other"
+
+/** One devicetree property (see internal/keymap Prop). */
+export interface Prop {
+  name: string
+  type: "bool" | "cells" | "string" | "raw"
+  value: string
+}
+
 export interface CustomBehavior {
+  /** Label as read from the file; "" for behaviors created in the editor. */
+  id: string
+  label: string
   ref: string
   node_name: string
   compatible: string
-  kind: "hold-tap" | "macro" | "tap-dance" | "mod-morph" | "sensor" | "other"
+  kind: BehaviorKind
   display_name: string
   binding_cells: number
   sensor_binding_cells: number | null
   bindings: string[]
+  props: Prop[]
   source: string
 }
 
+/** A top-level `&ref { ... };` node changing a behavior defined elsewhere. */
+export interface Override {
+  id: string
+  ref: string
+  props: Prop[]
+}
+
 export interface ConditionalLayer {
+  id: string
   name: string
   if_layers: number[]
   then_layer: number
+  read_only: boolean
 }
 
 export interface Keymap {
   layers: Layer[]
   combos: Combo[]
   behaviors: CustomBehavior[]
+  overrides: Override[]
   conditional_layers: ConditionalLayer[]
   defines: Record<string, string>
   includes: string[]
@@ -109,7 +132,7 @@ export interface LayoutKey {
 export interface Layout {
   keys: LayoutKey[]
   sensors: { label: string }[]
-  source: "custom" | "json" | "devicetree" | "generated"
+  source: "custom" | "json" | "devicetree" | "zmk" | "matrix" | "generated"
   path?: string
   name?: string
 }
@@ -121,6 +144,8 @@ export interface KeymapDocument {
   layout_warnings: string[]
   hash: string
   source: string
+  /** Set after a save: likely build problems the save introduced. */
+  problems: string[]
 }
 
 export interface Settings {
@@ -202,6 +227,8 @@ export interface BuiltinBehavior {
   includes?: string[]
   commands?: BehaviorCommand[]
   sensor?: boolean
+  /** Macro control behaviors (&macro_tap, ...), only offered in macros. */
+  macro?: boolean
 }
 
 export interface RawKeycode {

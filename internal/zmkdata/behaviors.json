@@ -456,5 +456,79 @@
     ],
     "description": "Send one key on clockwise and another on counter-clockwise rotation",
     "sensor": true
+  },
+  {
+    "code": "&macro_tap",
+    "name": "Macro: tap",
+    "params": [],
+    "description": "Following bindings are tapped (pressed and released)",
+    "macro": true
+  },
+  {
+    "code": "&macro_press",
+    "name": "Macro: press",
+    "params": [],
+    "description": "Following bindings are pressed and held",
+    "macro": true
+  },
+  {
+    "code": "&macro_release",
+    "name": "Macro: release",
+    "params": [],
+    "description": "Following bindings are released",
+    "macro": true
+  },
+  {
+    "code": "&macro_pause_for_release",
+    "name": "Macro: pause for release",
+    "params": [],
+    "description": "Wait until the macro key is released before continuing",
+    "macro": true
+  },
+  {
+    "code": "&macro_wait_time",
+    "name": "Macro: wait time",
+    "params": [
+      "ms"
+    ],
+    "description": "Set the wait between steps (ms)",
+    "macro": true
+  },
+  {
+    "code": "&macro_tap_time",
+    "name": "Macro: tap time",
+    "params": [
+      "ms"
+    ],
+    "description": "Set how long taps are held (ms)",
+    "macro": true
+  },
+  {
+    "code": "&macro_param_1to1",
+    "name": "Macro: param 1 → 1",
+    "params": [],
+    "description": "Use the macro's first parameter as the next binding's first parameter",
+    "macro": true
+  },
+  {
+    "code": "&macro_param_1to2",
+    "name": "Macro: param 1 → 2",
+    "params": [],
+    "description": "Use the macro's first parameter as the next binding's second parameter",
+    "macro": true
+  },
+  {
+    "code": "&macro_param_2to1",
+    "name": "Macro: param 2 → 1",
+    "params": [],
+    "description": "Use the macro's second parameter as the next binding's first parameter",
+    "macro": true
+  },
+  {
+    "code": "&macro_param_2to2",
+    "name": "Macro: param 2 → 2",
+    "params": [],
+    "description": "Use the macro's second parameter as the next binding's second parameter",
+    "macro": true
   }
 ]

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react"
 
 import type { Layout } from "@/api/types"
 import { Key } from "@/components/keyboard/Key"
@@ -20,7 +20,9 @@ export function KeyboardCanvas({
   highlighted,
   dimmed,
   changed,
+  marked,
   onKeyClick,
+  onDragKey,
   renderAnchor,
 }: {
   layout: Layout
@@ -29,7 +31,9 @@ export function KeyboardCanvas({
   highlighted?: Set<number>
   dimmed?: boolean
   changed?: Set<number>
-  onKeyClick?: (index: number) => void
+  marked?: number | null
+  onKeyClick?: (index: number, e: MouseEvent) => void
+  onDragKey?: (from: number, to: number, copy: boolean) => void
   renderAnchor?: (box: KeyBox) => ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -56,10 +60,7 @@ export function KeyboardCanvas({
 
   return (
     <div ref={ref} className="w-full">
-      <div
-        className="relative mx-auto"
-        style={{ width: bounds.width * scale, height: bounds.height * scale + 8 }}
-      >
+      <div className="relative mx-auto" style={{ width: bounds.width * scale, height: bounds.height * scale + 8 }}>
         <div
           className="absolute top-0 left-0 origin-top-left"
           style={{ width: bounds.width, height: bounds.height, transform: `scale(${scale})` }}
@@ -74,7 +75,9 @@ export function KeyboardCanvas({
               highlighted={highlighted?.has(i)}
               dimmed={dimmed && !highlighted?.has(i)}
               changed={changed?.has(i)}
+              marked={marked === i}
               onClick={onKeyClick}
+              onDragKey={onDragKey}
             />
           ))}
           {selected != null && boxes[selected] && renderAnchor?.(boxes[selected])}

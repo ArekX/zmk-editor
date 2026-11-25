@@ -8,13 +8,38 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/ArekX/zmk-editor/internal/keymap"
 	"github.com/ArekX/zmk-editor/internal/layout"
 	"github.com/ArekX/zmk-editor/internal/store"
+	"github.com/ArekX/zmk-editor/internal/zmkdata"
 )
+
+var builtins = sync.OnceValue(func() map[string]keymap.BuiltinBehavior {
+	b, err := keymap.ParseBuiltins(zmkdata.Behaviors)
+	if err != nil {
+		panic("embedded behaviors.json: " + err.Error())
+	}
+	return b
+})
+
+// newProblems returns build problems in after that before did not have,
+// so references to behaviors from included files (which the editor cannot
+// see) are not reported over and over.
+func newProblems(before, after *keymap.Keymap) []string {
+	old := keymap.Check(before, builtins(), nil)
+	out := []string{}
+	for _, p := range keymap.Check(after, builtins(), nil) {
+		if !slices.Contains(old, p) {
+			out = append(out, p)
+		}
+	}
+	return out
+}
 
 var skipDirs = map[string]bool{
 	".git": true, "node_modules": true, "zmk": true, "zephyr": true,
@@ -75,6 +100,9 @@ type Document struct {
 	LayoutWarnings []string       `json:"layout_warnings"`
 	Hash           string         `json:"hash"`
 	Source         string         `json:"source"`
+	// Problems are set by Save: things in the written file that would
+	// likely break the firmware build and were not there before.
+	Problems []string `json:"problems"`
 }
 
 // Load reads and parses a keymap plus its layout.
@@ -99,7 +127,7 @@ func (s *Service) document(repo store.Repository, rel, src string) (*Document, e
 	if warnings == nil {
 		warnings = []string{}
 	}
-	return &Document{Path: rel, Keymap: km, Layout: l, LayoutWarnings: warnings, Hash: hash(src), Source: src}, nil
+	return &Document{Path: rel, Keymap: km, Layout: l, LayoutWarnings: warnings, Hash: hash(src), Source: src, Problems: []string{}}, nil
 }
 
 func (s *Service) layoutFor(repo store.Repository, rel string, km *keymap.Keymap) (*layout.Layout, []string) {
@@ -148,7 +176,12 @@ func (s *Service) Save(repo store.Repository, rel, baseHash string, km *keymap.K
 			return nil, fmt.Errorf("write %s: %w", rel, err)
 		}
 	}
-	return s.document(repo, rel, out)
+	doc, err := s.document(repo, rel, out)
+	if err != nil {
+		return nil, err
+	}
+	doc.Problems = newProblems(orig, doc.Keymap)
+	return doc, nil
 }
 
 // Preview returns the file content Save would write, without writing it.

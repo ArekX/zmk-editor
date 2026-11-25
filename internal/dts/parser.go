@@ -126,8 +126,44 @@ func (p *parser) directive() {
 		if i == 0 || (i < len(rest) && rest[i] == '(') {
 			return // function-like macro
 		}
-		p.file.Defines[rest[:i]] = strings.TrimSpace(rest[i:])
+		name := rest[:i]
+		p.file.Defines[name] = strings.TrimSpace(rest[i:])
+		p.recordDefineSpan(start, name)
 	}
+}
+
+// recordDefineSpan stores where the value of a single-line object-like
+// #define starting at lineStart sits, so it can be rewritten in place.
+func (p *parser) recordDefineSpan(lineStart int, name string) {
+	end := p.pos
+	if end > lineStart && p.src[end-1] == '\n' {
+		end--
+	}
+	line := p.src[lineStart:end]
+	if strings.Contains(line, "\\") || strings.Contains(line, "/*") || strings.Contains(line, "//") {
+		return
+	}
+	d := strings.Index(line, "define")
+	if d < 0 {
+		return
+	}
+	idx := strings.Index(line[d+len("define"):], name)
+	if idx < 0 {
+		return
+	}
+	idx += d + len("define")
+	vs := lineStart + idx + len(name)
+	for vs < end && (p.src[vs] == ' ' || p.src[vs] == '\t') {
+		vs++
+	}
+	ve := end
+	for ve > vs && (p.src[ve-1] == ' ' || p.src[ve-1] == '\t' || p.src[ve-1] == '\r') {
+		ve--
+	}
+	if p.file.DefineSpans == nil {
+		p.file.DefineSpans = map[string]Span{}
+	}
+	p.file.DefineSpans[name] = Span{Start: vs, End: ve}
 }
 
 func isIdentChar(c byte) bool {

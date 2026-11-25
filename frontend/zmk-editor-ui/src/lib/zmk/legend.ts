@@ -43,6 +43,7 @@ const SHORT_NAMES: Record<string, string> = {
 }
 
 export function keycodeText(node: BindNode, catalog: Catalog): string {
+  if (node.value === "MACRO_PLACEHOLDER") return "‹param›"
   const kc = catalog.keycode.get(node.value)
   if (node.params.length > 0) {
     const inner = node.params.map((p) => keycodeText(p, catalog)).join(",")
@@ -89,6 +90,10 @@ export function legendFor(binding: string | undefined, catalog: Catalog): Legend
   if (node.value === "&none") return { tag: "", main: "", title: "None", size: "lg", kind: "none" }
 
   const specs = paramsFor(def, node)
+  const chord = def?.custom?.kind === "macro" ? chordText(def.custom.bindings, catalog) : null
+  if (chord && node.params.length === 0) {
+    return { tag, main: chord, title, size: sizeFor(chord), kind: "normal" }
+  }
   if (node.params.length === 0) {
     const main = SHORT_NAMES[node.value] ?? (def?.custom ? tag : (def?.name ?? tag))
     const size = sizeFor(main)
@@ -101,4 +106,17 @@ export function legendFor(binding: string | undefined, catalog: Catalog): Legend
   }
   const main = texts.join(" ")
   return { tag, main, title, size: sizeFor(main), kind: def ? "normal" : "unknown", color }
+}
+
+/**
+ * For a macro that presses keys together (`&macro_press &kp A &kp B
+ * &macro_pause_for_release &macro_release ...`), the keys joined by "+".
+ */
+function chordText(steps: string[], catalog: Catalog): string | null {
+  const t = steps.map((s) => s.trim())
+  const pause = t.indexOf("&macro_pause_for_release")
+  if (t[0] !== "&macro_press" || pause < 2) return null
+  const keys = t.slice(1, pause)
+  if (!keys.every((k) => /^&kp \S+$/.test(k))) return null
+  return keys.map((k) => keycodeText(parseBinding(k).params[0], catalog)).join("+")
 }

@@ -181,7 +181,7 @@ export function EditorPage() {
           tab === "combos" ? (
             <CombosPanel doc={doc.data} keymap={draft.keymap} catalog={catalog} update={draft.update} />
           ) : tab === "behaviors" ? (
-            <BehaviorsPanel keymap={draft.keymap} catalog={catalog} />
+            <BehaviorsPanel doc={doc.data} keymap={draft.keymap} catalog={catalog} update={draft.update} />
           ) : (
             <LayersPanel
               doc={doc.data}

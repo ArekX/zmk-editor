@@ -10,6 +10,7 @@ type Keymap struct {
 	Layers            []Layer            `json:"layers"`
 	Combos            []Combo            `json:"combos"`
 	Behaviors         []Behavior         `json:"behaviors"`
+	Overrides         []Override         `json:"overrides"`
 	ConditionalLayers []ConditionalLayer `json:"conditional_layers"`
 	Defines           map[string]string  `json:"defines"`
 	Includes          []string           `json:"includes"`
@@ -50,20 +51,49 @@ type Combo struct {
 
 // Behavior is a behavior or macro node defined in the keymap itself.
 type Behavior struct {
-	Ref                string   `json:"ref"` // "&label"
+	// ID is the label the node had when the file was read ("" for
+	// behaviors created in the UI). Label is the current one; renaming a
+	// behavior changes Label and keeps ID.
+	ID                 string   `json:"id"`
+	Label              string   `json:"label"`
+	Ref                string   `json:"ref"` // "&label" as read
 	NodeName           string   `json:"node_name"`
 	Compatible         string   `json:"compatible"`
-	Kind               string   `json:"kind"` // hold-tap, macro, tap-dance, mod-morph, sensor, other
+	Kind               string   `json:"kind"` // hold-tap, macro, tap-dance, mod-morph, sticky-key, sensor, other
 	DisplayName        string   `json:"display_name"`
 	BindingCells       int      `json:"binding_cells"`
 	SensorBindingCells *int     `json:"sensor_binding_cells"`
 	Bindings           []string `json:"bindings"`
-	Source             string   `json:"source"`
+	// Props are every other property (flavor, tapping-term-ms, ...).
+	Props  []Prop `json:"props"`
+	Source string `json:"source"`
 }
 
-// ConditionalLayer is a child of `zmk,conditional-layers` (read-only).
+// Override is a top-level `&label { ... };` node changing properties of a
+// node defined elsewhere, typically a built-in behavior (`&mt`).
+type Override struct {
+	ID    string `json:"id"`  // the reference as read ("" for new)
+	Ref   string `json:"ref"` // "&mt"
+	Props []Prop `json:"props"`
+}
+
+// Prop is one devicetree property in an editable form.
+type Prop struct {
+	Name string `json:"name"`
+	// Type is "bool" (no value), "cells" (one <...> group; Value is its
+	// cells separated by single spaces), "string" (Value is unquoted) or
+	// "raw" (Value is the devicetree text as written).
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+// ConditionalLayer is a child of `zmk,conditional-layers`.
 type ConditionalLayer struct {
+	ID       string `json:"id"` // node name as read ("" for new)
 	Name     string `json:"name"`
 	IfLayers []int  `json:"if_layers"`
 	Then     int    `json:"then_layer"`
+	// ReadOnly is set when layers use expressions the editor cannot
+	// resolve.
+	ReadOnly bool `json:"read_only"`
 }

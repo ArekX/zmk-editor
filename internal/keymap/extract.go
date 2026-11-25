@@ -16,6 +16,7 @@ func Parse(src string) (*Keymap, *dts.File, error) {
 		Layers:            []Layer{},
 		Combos:            []Combo{},
 		Behaviors:         []Behavior{},
+		Overrides:         []Override{},
 		ConditionalLayers: []ConditionalLayer{},
 		Defines:           f.Defines,
 		Includes:          f.Includes,
@@ -37,13 +38,9 @@ func Parse(src string) (*Keymap, *dts.File, error) {
 			km.Combos = append(km.Combos, extractCombo(c, f.Defines))
 		}
 	}
-	for _, n := range f.FindCompatible("zmk,conditional-layers") {
+	if n := conditionalNode(f); n != nil {
 		for _, c := range n.Children {
-			cl := ConditionalLayer{Name: c.Name, IfLayers: resolveInts(propCells(c, "if-layers"), f.Defines)}
-			if v := resolveInts(propCells(c, "then-layer"), f.Defines); len(v) == 1 {
-				cl.Then = v[0]
-			}
-			km.ConditionalLayers = append(km.ConditionalLayers, cl)
+			km.ConditionalLayers = append(km.ConditionalLayers, extractConditional(c, f.Defines))
 		}
 	}
 	f.Walk(func(n *dts.Node) {
@@ -51,7 +48,86 @@ func Parse(src string) (*Keymap, *dts.File, error) {
 			km.Behaviors = append(km.Behaviors, b)
 		}
 	})
+	for _, n := range overrideNodes(f) {
+		km.Overrides = append(km.Overrides, Override{ID: n.Name, Ref: n.Name, Props: extractProps(n, nil)})
+	}
 	return km, f, nil
+}
+
+func conditionalNode(f *dts.File) *dts.Node {
+	if nodes := f.FindCompatible("zmk,conditional-layers"); len(nodes) > 0 {
+		return nodes[0]
+	}
+	return nil
+}
+
+func extractConditional(c *dts.Node, defines map[string]string) ConditionalLayer {
+	cl := ConditionalLayer{ID: c.Name, Name: c.Name, IfLayers: []int{}}
+	cells := propCells(c, "if-layers")
+	cl.IfLayers = resolveInts(cells, defines)
+	then := propCells(c, "then-layer")
+	v := resolveInts(then, defines)
+	if len(v) == 1 {
+		cl.Then = v[0]
+	}
+	if len(cl.IfLayers) != len(cells) || len(v) != 1 || len(then) != 1 {
+		cl.ReadOnly = true
+	}
+	return cl
+}
+
+// overrideNodes are top-level `&label { ... };` nodes without children.
+func overrideNodes(f *dts.File) []*dts.Node {
+	var out []*dts.Node
+	for _, n := range f.Nodes {
+		if strings.HasPrefix(n.Name, "&") && !strings.HasPrefix(n.Name, "&{") && len(n.Children) == 0 {
+			out = append(out, n)
+		}
+	}
+	return out
+}
+
+// structuralProps are handled by dedicated Behavior fields.
+var structuralProps = map[string]bool{
+	"compatible": true, "#binding-cells": true, "#sensor-binding-cells": true,
+	"bindings": true, "label": true, "display-name": true,
+}
+
+// extractProps returns n's properties as Props, skipping names in skip.
+func extractProps(n *dts.Node, skip map[string]bool) []Prop {
+	props := []Prop{}
+	for _, p := range n.Props {
+		if skip[p.Name] {
+			continue
+		}
+		props = append(props, propOf(p))
+	}
+	return props
+}
+
+func propOf(p *dts.Property) Prop {
+	if p.ValueStart < 0 {
+		return Prop{Name: p.Name, Type: "bool"}
+	}
+	raw := strings.TrimSpace(p.Value)
+	clean := strings.TrimSpace(dts.StripComments(raw))
+	if groups := dts.CellGroups(clean); len(groups) == 1 && strings.HasPrefix(clean, "<") && strings.HasSuffix(clean, ">") {
+		return Prop{Name: p.Name, Type: "cells", Value: joinCells(groups[0])}
+	}
+	if strings.HasPrefix(clean, `"`) && strings.Count(clean, `"`) == 2 && strings.HasSuffix(clean, `"`) {
+		s, _ := dts.ParseString(clean)
+		return Prop{Name: p.Name, Type: "string", Value: s}
+	}
+	return Prop{Name: p.Name, Type: "raw", Value: raw}
+}
+
+func joinCells(group string) string {
+	toks := dts.Tokenize(group)
+	parts := make([]string, len(toks))
+	for i, t := range toks {
+		parts[i] = t.Text
+	}
+	return strings.Join(parts, " ")
 }
 
 func keymapNode(f *dts.File) *dts.Node {
@@ -157,12 +233,15 @@ func extractBehavior(n *dts.Node, f *dts.File) (Behavior, bool) {
 		return Behavior{}, false
 	}
 	b := Behavior{
+		ID:          n.Labels[0],
+		Label:       n.Labels[0],
 		Ref:         "&" + n.Labels[0],
 		NodeName:    n.Name,
 		Compatible:  compatible,
 		Kind:        behaviorKind(compatible),
 		DisplayName: n.StringProp("display-name"),
 		Bindings:    []string{},
+		Props:       extractProps(n, structuralProps),
 		Source:      f.Src[n.Start:n.End],
 	}
 	if b.DisplayName == "" {
@@ -191,6 +270,8 @@ func behaviorKind(compatible string) string {
 		return "tap-dance"
 	case compatible == "zmk,behavior-mod-morph":
 		return "mod-morph"
+	case compatible == "zmk,behavior-sticky-key":
+		return "sticky-key"
 	case strings.HasPrefix(compatible, "zmk,behavior-sensor-rotate"):
 		return "sensor"
 	default:

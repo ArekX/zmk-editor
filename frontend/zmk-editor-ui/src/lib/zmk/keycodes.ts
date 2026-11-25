@@ -25,9 +25,20 @@ const SYMBOLS: Record<string, string> = {
   C_VOL_UP: "🔊", C_VOL_DN: "🔉", C_MUTE: "🔇",
   C_PP: "⏯", C_NEXT: "⏭", C_PREV: "⏮", C_STOP: "⏹",
   C_BRI_UP: "☀+", C_BRI_DN: "☀-",
+  ...Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`N${i}`, String(i)])),
+  ...Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`NUMBER_${i}`, String(i)])),
 }
 
 const MOD_FN = /^(.+?)\(code\)$/
+
+// "# [Hash / Pound]", "- [Minus] and _ [Underscore]", "ろ (International 1)",
+// keypad "1": the character the key types, from the catalogue description.
+const DESC_SYMBOL = /^(\S{1,4}) [[(]/
+
+function descriptionSymbol(description: string): string | undefined {
+  if ([...description].length === 1) return description
+  return description.match(DESC_SYMBOL)?.[1]
+}
 
 function shortest(names: string[]): string {
   return [...names].sort((a, b) => a.length - b.length)[0]
@@ -40,7 +51,7 @@ export function normalizeKeycodes(raw: RawKeycode[]): Keycode[] {
     const aliases = k.names.filter((n) => !MOD_FN.test(n))
     const fn = k.names.map((n) => n.match(MOD_FN)).find(Boolean)
     const short = shortest(aliases)
-    const symbol = SYMBOLS[short] ?? k.symbol ?? short
+    const symbol = SYMBOLS[short] ?? k.symbol ?? descriptionSymbol(k.description) ?? short
     for (const code of aliases) {
       out.push({
         code,

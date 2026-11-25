@@ -22,6 +22,8 @@ const SOURCE_LABEL: Record<string, string> = {
   custom: "a custom layout saved in this app",
   json: "a layout JSON file in the repository",
   devicetree: "a zmk,physical-layout in the repository",
+  zmk: "the keyboard's layout from ZMK itself",
+  matrix: "the zmk,matrix-transform map in the repository, arranged as written",
   generated: "a grid generated from the keymap's rows (no layout found)",
 }
 

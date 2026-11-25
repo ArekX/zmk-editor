@@ -121,7 +121,7 @@ func TestApplyEditsAndAdds(t *testing.T) {
 	t.Log(out)
 }
 
-func TestDeleteLayerAndRejectReorder(t *testing.T) {
+func TestDeleteLayer(t *testing.T) {
 	src := loadFixture(t)
 	km, _, _ := Parse(src)
 	km.Layers = append(km.Layers[:3], km.Layers[4])
@@ -132,11 +132,6 @@ func TestDeleteLayerAndRejectReorder(t *testing.T) {
 	re, _, _ := Parse(out)
 	if len(re.Layers) != 4 || re.Layers[3].ID != "autoshift" {
 		t.Fatalf("%+v", re.Layers)
-	}
-	km, _, _ = Parse(src)
-	km.Layers[0], km.Layers[1] = km.Layers[1], km.Layers[0]
-	if _, err := Apply(src, km, nil); err == nil {
-		t.Fatal("reorder accepted")
 	}
 }
 

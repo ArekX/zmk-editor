@@ -10,10 +10,10 @@ import (
 	"github.com/ArekX/zmk-editor/internal/dts"
 )
 
-// Apply writes the edited model back into src. Only layers and combos are
-// editable: changed properties are replaced in place, removed nodes are
-// deleted, new nodes are appended. grid (optional) is the physical layout's
-// row/col per key, used to format bindings tables.
+// Apply writes the edited model back into src: changed properties are
+// replaced in place, removed nodes deleted, new nodes added. grid
+// (optional) is the physical layout's row/col per key, used to format
+// bindings tables.
 func Apply(src string, updated *Keymap, grid []GridPos) (string, error) {
 	_, f, err := Parse(src)
 	if err != nil {
@@ -24,16 +24,21 @@ func Apply(src string, updated *Keymap, grid []GridPos) (string, error) {
 		return "", errors.New(`the file has no node with compatible = "zmk,keymap"`)
 	}
 	var edits []edit
-	le, err := layerEdits(src, f, kn, updated.Layers, grid)
-	if err != nil {
-		return "", err
+	steps := []func() ([]edit, error){
+		func() ([]edit, error) { return layerEdits(src, f, kn, updated.Layers, grid) },
+		func() ([]edit, error) { return comboEdits(src, f, kn, updated.Combos) },
+		func() ([]edit, error) { return behaviorEdits(src, f, kn, updated.Behaviors) },
+		func() ([]edit, error) { return overrideEdits(src, f, updated.Overrides) },
+		func() ([]edit, error) { return conditionalEdits(src, f, kn, updated.ConditionalLayers) },
+		func() ([]edit, error) { return defineEdits(f, updated.Defines), nil },
 	}
-	edits = append(edits, le...)
-	ce, err := comboEdits(src, f, kn, updated.Combos)
-	if err != nil {
-		return "", err
+	for _, step := range steps {
+		e, err := step()
+		if err != nil {
+			return "", err
+		}
+		edits = append(edits, e...)
 	}
-	edits = append(edits, ce...)
 	out, err := applyEdits(src, edits)
 	if err != nil {
 		return "", err
@@ -45,67 +50,122 @@ func Apply(src string, updated *Keymap, grid []GridPos) (string, error) {
 	return out, nil
 }
 
+// layerEdits updates layers in place. Existing layer nodes are "slots":
+// when layers were reordered, each slot receives the (edited) text of the
+// layer now at that position, so comments and spacing between layers stay
+// where they were. Layers beyond the last slot are appended after it.
 func layerEdits(src string, f *dts.File, kn *dts.Node, layers []Layer, grid []GridPos) ([]edit, error) {
 	unit := detectUnit(src, kn)
 	indent := childIndent(src, kn, unit)
 	existing := map[string]*dts.Node{}
-	var origOrder []string
+	var slots []*dts.Node
+	taken := map[string]bool{}
 	for _, c := range kn.Children {
 		existing[c.Name] = c
-		origOrder = append(origOrder, c.Name)
+		taken[c.Name] = true
 	}
 
-	var keptOrder []string
-	var edits []edit
-	var added []Layer
+	used := map[string]bool{}
 	var shape []int
 	for _, l := range layers {
 		if l.ID == "" {
-			added = append(added, l)
 			continue
 		}
 		node, ok := existing[l.ID]
 		if !ok {
 			return nil, fmt.Errorf("layer %q no longer exists in the file; reload the keymap", l.ID)
 		}
-		if len(added) > 0 {
-			return nil, errors.New("new layers can only be added after existing ones")
+		if used[l.ID] {
+			return nil, fmt.Errorf("layer %q appears twice", l.ID)
 		}
-		keptOrder = append(keptOrder, l.ID)
-		orig := extractLayer(node, f.Defines)
+		used[l.ID] = true
 		if shape == nil {
-			shape = orig.Shape
-		}
-		edits = append(edits, updateLayer(src, node, orig, l, grid, unit)...)
-	}
-	// Existing layers must keep their relative order: references like
-	// `&mo 2` are positional and reordering silently breaks them.
-	var remaining []string
-	for _, id := range origOrder {
-		if slices.Contains(keptOrder, id) {
-			remaining = append(remaining, id)
+			shape = extractLayer(node, f.Defines).Shape
 		}
 	}
-	if !slices.Equal(remaining, keptOrder) {
-		return nil, errors.New("reordering existing layers is not supported")
-	}
-	for _, id := range origOrder {
-		if !slices.Contains(keptOrder, id) {
-			n := existing[id]
-			edits = append(edits, removeStatement(src, n.Start, n.End))
+	var edits []edit
+	for _, c := range kn.Children {
+		if used[c.Name] {
+			slots = append(slots, c)
+		} else {
+			edits = append(edits, removeStatement(src, c.Start, c.End))
 		}
 	}
-	if len(added) > 0 {
-		taken := map[string]bool{}
-		for _, id := range origOrder {
-			taken[id] = true
+
+	// text returns the node text for layer l, without leading indentation.
+	text := func(l Layer) (string, error) {
+		if l.ID == "" {
+			name := uniqueNodeName(layerNodeName(l.Name), taken)
+			return newLayerNode(l, name, indent, unit, grid, shape), nil
+		}
+		node := existing[l.ID]
+		local := updateLayer(src, node, extractLayer(node, f.Defines), l, grid, unit)
+		for i := range local {
+			local[i].start -= node.Start
+			local[i].end -= node.Start
+		}
+		return applyEdits(src[node.Start:node.End], local)
+	}
+
+	if len(slots) == 0 {
+		if len(layers) == 0 {
+			return edits, nil
 		}
 		var b strings.Builder
-		for _, l := range added {
-			name := uniqueNodeName(layerNodeName(l.Name), taken)
-			b.WriteString(newLayerText(l, name, indent, unit, grid, shape))
+		for _, l := range layers {
+			t, err := text(l)
+			if err != nil {
+				return nil, err
+			}
+			b.WriteString("\n" + indent + t + "\n")
 		}
-		edits = append(edits, insertBeforeClose(src, kn, b.String()))
+		return append(edits, insertBeforeClose(src, kn, b.String())), nil
+	}
+
+	inPlace := true
+	for i, l := range layers {
+		if i >= len(slots) || l.ID != slots[i].Name {
+			inPlace = false
+			break
+		}
+	}
+	if inPlace {
+		// Common case: same order. Edit each layer in place and append
+		// new ones after the last existing layer.
+		for _, l := range layers[:len(slots)] {
+			node := existing[l.ID]
+			edits = append(edits, updateLayer(src, node, extractLayer(node, f.Defines), l, grid, unit)...)
+		}
+		layers = layers[len(slots):]
+		var b strings.Builder
+		for _, l := range layers {
+			t, _ := text(l)
+			b.WriteString("\n\n" + indent + t)
+		}
+		if b.Len() > 0 {
+			last := slots[len(slots)-1]
+			edits = append(edits, edit{start: last.End, end: last.End, text: b.String()})
+		}
+		return edits, nil
+	}
+
+	for i, slot := range slots {
+		var b strings.Builder
+		group := layers[i : i+1]
+		if i == len(slots)-1 {
+			group = layers[i:]
+		}
+		for j, l := range group {
+			t, err := text(l)
+			if err != nil {
+				return nil, err
+			}
+			if j > 0 {
+				b.WriteString("\n\n" + indent)
+			}
+			b.WriteString(t)
+		}
+		edits = append(edits, edit{start: slot.Start, end: slot.End, text: b.String()})
 	}
 	return edits, nil
 }
@@ -119,8 +179,11 @@ func updateLayer(src string, node *dts.Node, orig, l Layer, grid []GridPos, unit
 		if p := node.Prop("bindings"); p != nil {
 			opts.CloseIndent = lineIndent(src, p.Start)
 			opts.Indent = opts.CloseIndent + unit
-			if !strings.Contains(p.Value, "\n") {
+			if nl := strings.IndexByte(p.Value, '\n'); nl < 0 {
 				value = " <" + strings.Join(l.Bindings, " ") + ">"
+			} else if row := p.ValueStart + nl + 1; strings.TrimSpace(src[row:min(row+64, p.ValueEnd)]) != "" {
+				// Keep the row indentation the file uses (possibly none).
+				opts.Indent = lineIndent(src, row)
 			}
 		}
 		if value == "" {
@@ -148,11 +211,12 @@ func updateLayer(src string, node *dts.Node, orig, l Layer, grid []GridPos, unit
 	return edits
 }
 
-func newLayerText(l Layer, name, indent, unit string, grid []GridPos, shape []int) string {
+// newLayerNode renders a layer node from its name to the closing "};",
+// for a node whose first line is indented by indent.
+func newLayerNode(l Layer, name, indent, unit string, grid []GridPos, shape []int) string {
 	inner := indent + unit
 	var b strings.Builder
-	b.WriteString("\n")
-	b.WriteString(indent + name + " {\n")
+	b.WriteString(name + " {\n")
 	if l.Name != "" && l.Name != name {
 		b.WriteString(inner + "display-name = " + dts.QuoteString(l.Name) + ";\n")
 	}
@@ -161,7 +225,7 @@ func newLayerText(l Layer, name, indent, unit string, grid []GridPos, shape []in
 	if len(l.SensorBindings) > 0 {
 		b.WriteString(inner + "sensor-bindings =" + FormatInlineGroups(l.SensorBindings) + ";\n")
 	}
-	b.WriteString(indent + "};\n")
+	b.WriteString(indent + "};")
 	return b.String()
 }
 

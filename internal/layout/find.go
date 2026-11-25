@@ -51,8 +51,15 @@ func Find(repoDir, keymapRel string, keyCount int, shape []int, custom string) (
 		return l, warnings
 	}
 
-	if l := findDevicetree(repoDir, base, keyCount); l != nil {
+	physical, matrix := findDevicetree(repoDir, base, keyCount)
+	if physical != nil {
+		return physical, warnings
+	}
+	if l := FromZMK(base, keyCount); l != nil {
 		return l, warnings
+	}
+	if matrix != nil {
+		return matrix, warnings
 	}
 	return Generate(shape, keyCount), warnings
 }
@@ -80,9 +87,11 @@ func jsonCandidates(repoDir, dir, base string) []string {
 	return out
 }
 
-func findDevicetree(repoDir, base string, keyCount int) *Layout {
-	var best *Layout
-	bestScore := -1
+// findDevicetree looks through the repository's devicetree files for a
+// `zmk,physical-layout`, and failing that a `zmk,matrix-transform`, with
+// keyCount keys. Files whose path mentions the keymap's name win.
+func findDevicetree(repoDir, base string, keyCount int) (physical, matrix *Layout) {
+	bestPhysical, bestMatrix := -1, -1
 	_ = filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return nil
@@ -104,23 +113,31 @@ func findDevicetree(repoDir, base string, keyCount int) *Layout {
 			return nil
 		}
 		data, err := os.ReadFile(path)
-		if err != nil || !strings.Contains(string(data), "zmk,physical-layout") {
+		if err != nil {
 			return nil
 		}
-		for _, l := range FromDevicetree(string(data)) {
-			if len(l.Keys) != keyCount {
-				continue
+		src := string(data)
+		score := 0
+		if strings.Contains(strings.ToLower(rel), strings.ToLower(base)) {
+			score = 1
+		}
+		if strings.Contains(src, "zmk,physical-layout") {
+			for _, l := range FromDevicetree(src) {
+				if len(l.Keys) == keyCount && score > bestPhysical {
+					l.Path = rel
+					physical, bestPhysical = l, score
+				}
 			}
-			score := 0
-			if strings.Contains(strings.ToLower(rel), strings.ToLower(base)) {
-				score = 1
-			}
-			if score > bestScore {
-				l.Path = rel
-				best, bestScore = l, score
+		}
+		if strings.Contains(src, "zmk,matrix-transform") {
+			for _, l := range FromMatrixTransform(src) {
+				if len(l.Keys) == keyCount && score > bestMatrix {
+					l.Path = rel
+					matrix, bestMatrix = l, score
+				}
 			}
 		}
 		return nil
 	})
-	return best
+	return physical, matrix
 }

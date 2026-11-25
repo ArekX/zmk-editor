@@ -37,6 +37,8 @@ const (
 	SourceCustom     = "custom"
 	SourceJSON       = "json"
 	SourceDevicetree = "devicetree"
+	SourceMatrix     = "matrix"
+	SourceZMK        = "zmk"
 	SourceGenerated  = "generated"
 )
 
@@ -51,7 +53,9 @@ type Layout struct {
 
 // Grid returns row/col per key when every key has both, else nil.
 func (l *Layout) Grid() []keymap.GridPos {
-	if l == nil || l.Source == SourceGenerated {
+	// Generated and matrix-derived positions only mirror text, so they
+	// must not reformat the keymap.
+	if l == nil || l.Source == SourceGenerated || l.Source == SourceMatrix {
 		return nil
 	}
 	out := make([]keymap.GridPos, len(l.Keys))

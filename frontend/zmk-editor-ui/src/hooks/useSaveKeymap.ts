@@ -14,7 +14,14 @@ export function useSaveKeymap(repoId: number, doc: KeymapDocument | undefined) {
     onSuccess: (next) => {
       qc.setQueryData(keys.keymap(repoId, next.path), next)
       qc.invalidateQueries({ queryKey: keys.repo(repoId) })
-      toast.success("Saved to the working tree")
+      if (next.problems?.length) {
+        toast.warning(`Saved, but the firmware build may fail: ${next.problems.length} problem(s)`, {
+          description: next.problems.slice(0, 5).join("\n"),
+          duration: 20000,
+        })
+      } else {
+        toast.success("Saved to the working tree")
+      }
     },
     onError: (err) => {
       if (err instanceof ApiError && err.code === "conflict") {

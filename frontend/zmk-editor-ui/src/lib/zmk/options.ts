@@ -2,19 +2,30 @@ import type { PickerOption } from "@/components/common/ValuePicker"
 import type { BehaviorDef, Catalog } from "@/lib/zmk/catalog"
 import type { ParamSpec } from "@/lib/zmk/params"
 
-const SYSTEM = new Set(["&bt", "&out", "&rgb_ug", "&bl", "&ext_power", "&sys_reset", "&bootloader", "&soft_off", "&studio_unlock"])
+const SYSTEM = new Set([
+  "&bt",
+  "&out",
+  "&rgb_ug",
+  "&bl",
+  "&ext_power",
+  "&sys_reset",
+  "&bootloader",
+  "&soft_off",
+  "&studio_unlock",
+])
 const MOUSE = new Set(["&mkp", "&mmv", "&msc"])
 
 function behaviorGroup(b: BehaviorDef): string {
   if (b.custom) return "Defined in this keymap"
+  if (b.macro) return "Macro steps"
   if (SYSTEM.has(b.code)) return "System"
   if (MOUSE.has(b.code)) return "Mouse"
   return "Keys and layers"
 }
 
-export function behaviorOptions(catalog: Catalog, sensor: boolean): PickerOption[] {
+export function behaviorOptions(catalog: Catalog, sensor: boolean, macro = false): PickerOption[] {
   return catalog.behaviors
-    .filter((b) => (sensor ? b.sensor : !b.sensor))
+    .filter((b) => (sensor ? b.sensor : !b.sensor) && (macro || !b.macro))
     .map((b) => ({
       value: b.code,
       label: b.code,
@@ -50,7 +61,12 @@ export function keycodeOptions(catalog: Catalog, modsOnly: boolean): PickerOptio
 }
 
 export function layerOptions(catalog: Catalog): PickerOption[] {
-  return catalog.layers.map((l) => ({ value: String(l.index), label: String(l.index), hint: l.name, keywords: [l.name] }))
+  return catalog.layers.map((l) => ({
+    value: String(l.index),
+    label: String(l.index),
+    hint: l.name,
+    keywords: [l.name],
+  }))
 }
 
 export function optionsFor(spec: ParamSpec, catalog: Catalog): PickerOption[] {

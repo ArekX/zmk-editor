@@ -79,13 +79,20 @@ type Define struct {
 	Value string
 }
 
+// Span is a byte range [Start, End) in the source.
+type Span struct {
+	Start, End int
+}
+
 // File is a parsed source.
 type File struct {
-	Src      string
-	Nodes    []*Node // top-level nodes: roots and &ref overrides
-	Defines  map[string]string
-	Includes []string
-	Warnings []string
+	Src     string
+	Nodes   []*Node // top-level nodes: roots and &ref overrides
+	Defines map[string]string
+	// DefineSpans locates the value of single-line object-like #defines.
+	DefineSpans map[string]Span
+	Includes    []string
+	Warnings    []string
 }
 
 // Walk visits every node in the file.

@@ -12,7 +12,15 @@ interface State {
 const HISTORY = 100
 
 function editable(km: Keymap | undefined): string {
-  return km ? JSON.stringify({ layers: km.layers, combos: km.combos }) : ""
+  if (!km) return ""
+  return JSON.stringify({
+    layers: km.layers,
+    combos: km.combos,
+    behaviors: km.behaviors.map(({ source: _source, ...b }) => b),
+    overrides: km.overrides,
+    conditional: km.conditional_layers,
+    defines: km.defines,
+  })
 }
 
 /**

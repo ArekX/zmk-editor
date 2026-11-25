@@ -1,0 +1,120 @@
+/*
+ * Sample: a 36-key split written the way many hand-maintained configs are:
+ * one long line of bindings per layer, comments between behavior
+ * properties, display names, capitalized node names and layer #defines.
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/keys.h>
+
+#define BASE 0
+#define NUM 1
+#define NAV 2
+#define SYS 3
+
+/ {
+    chosen { zmk,physical-layout = &sample_layout; };
+};
+
+/ {
+    behaviors {
+        // Home row mods, left hand.
+
+        hrl: home_row_left {
+            compatible = "zmk,behavior-hold-tap";
+            display-name = "Home Row Left";
+            bindings = <&kp>, <&kp>;
+
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <260>;
+
+            // Keep quick-tap short so repeated letters still type.
+
+            quick-tap-ms = <150>;
+            hold-trigger-key-positions = <5 6 7 8 9 15 16 17 18 19 25 26 27 28 29 30 31 32 33 34 35>;
+            hold-trigger-on-release;
+        };
+
+        hrr: home_row_right {
+            compatible = "zmk,behavior-hold-tap";
+            display-name = "Home Row Right";
+            bindings = <&kp>, <&kp>;
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <260>;
+            hold-trigger-key-positions = <0 1 2 3 4 10 11 12 13 14 20 21 22 23 24 30 31 32 33 34 35>;
+        };
+
+        // Thumb layer-tap with retro-tap.
+        tlt: thumb_layer_tap {
+            compatible = "zmk,behavior-hold-tap";
+            display-name = "Thumb Layer Tap";
+            bindings = <&mo>, <&kp>;
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <300>;
+            retro-tap;
+        };
+
+        bspc_del: backspace_delete {
+            compatible = "zmk,behavior-mod-morph";
+            bindings = <&kp BSPC>, <&kp DEL>;
+            #binding-cells = <0>;
+            mods = <(MOD_LSFT|MOD_RSFT)>;
+        };
+
+        td_caps: tap_dance_caps {
+            compatible = "zmk,behavior-tap-dance";
+            #binding-cells = <0>;
+            tapping-term-ms = <200>;
+            bindings = <&kp LSHFT>, <&caps_word>;
+        };
+    };
+
+    combos {
+        compatible = "zmk,combos";
+
+        esc {
+            key-positions = <0 1>;
+            bindings = <&kp ESC>;
+            layers = <BASE NUM>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        Base {
+            display-name = "Base";
+
+            // | Q | W | E | R | T |   | Y | U | I | O | P |
+
+            bindings = <
+&kp Q  &kp W  &kp E  &kp R  &kp T  &kp Y  &kp U  &kp I  &kp O  &kp P  &hrl LGUI A  &hrl LALT S  &hrl LCTRL D  &hrl LSHFT F  &kp G  &kp H  &hrr RSHFT J  &hrr RCTRL K  &hrr RALT L  &hrr RGUI SEMI  &kp Z  &kp X  &kp C  &kp V  &kp B  &kp N  &kp M  &kp COMMA  &kp DOT  &kp FSLH  &td_caps  &tlt NUM TAB  &kp SPACE  &tlt NAV RET  &bspc_del  &mo SYS
+            >;
+        };
+
+        Numbers {
+            display-name = "Numbers";
+            bindings = <
+&kp N1  &kp N2  &kp N3  &kp N4  &kp N5  &kp N6  &kp N7  &kp N8  &kp N9  &kp N0  &trans  &trans  &trans  &trans  &trans  &kp MINUS  &kp EQUAL  &kp LBKT  &kp RBKT  &kp BSLH  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &mo NAV  &trans  &trans
+            >;
+        };
+
+        Navigation {
+            display-name = "Nav";
+            bindings = <
+&trans  &trans  &trans  &trans  &trans  &kp PG_UP  &kp HOME  &kp UP  &kp END  &trans  &trans  &trans  &trans  &trans  &trans  &kp PG_DN  &kp LEFT  &kp DOWN  &kp RIGHT  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &kp LC(LEFT)  &kp LA(LS(TAB))  &kp LC(RIGHT)  &trans  &trans  &to BASE  &trans  &trans  &trans  &trans
+            >;
+        };
+
+        System {
+            display-name = "System";
+            bindings = <
+&bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_CLR  &none  &none  &none  &none  &none  &bootloader  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &none  &sys_reset  &none  &none  &none  &none  &none  &trans
+            >;
+        };
+    };
+};
