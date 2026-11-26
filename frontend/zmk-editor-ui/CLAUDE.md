@@ -8,6 +8,7 @@ This file applies to code under [frontend/zmk-editor-ui/](.). For project-wide c
 - **shadcn/ui** configured in [components.json](components.json) (style `radix-maia`, base color `mist`, icon library `hugeicons`). Add components with `npx shadcn@latest add <name>`; generated files land in `src/components/ui/` (check their imports: the CLI has written `from "cn"` instead of `@/lib/utils` before).
 - **Icons come from `@hugeicons/react` + `@hugeicons/core-free-icons`.** Don't swap icon libraries.
 - **TanStack Query** for server state (query keys in [src/hooks/queries.ts](src/hooks/queries.ts)), **react-router** for routes, **sonner** for toasts, **cmdk** for searchable pickers.
+- **Dependencies are at least 7 days old.** [.npmrc](.npmrc) sets `min-release-age=7`, so npm only installs versions published a week or more ago. If a `package.json` range starts at a newer version, lower it to the newest version that is old enough; leave audit fixes that are newer to a later install.
 - Theme: dark by default, `ThemeProvider` toggles the `.dark` class; colours are CSS variables in [src/index.css](src/index.css) (including `--brand`, `--key*` for keycaps).
 
 ## Commands
