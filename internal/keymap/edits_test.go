@@ -223,10 +223,10 @@ func TestAddBehaviorsOfEveryKind(t *testing.T) {
 func TestEditMacroKeepsBindingStyle(t *testing.T) {
 	// Leading-comma multi-line style.
 	out, _ := editFixture(t, "corne.keymap", func(km *Keymap) {
-		b := behavior(km, "shift")
-		b.Bindings = append(b.Bindings[:3], "&macro_param_1to1", "&kp MACRO_PLACEHOLDER", "&macro_wait_time 20", "&macro_release", "&kp LSHFT")
+		b := behavior(km, "wctl")
+		b.Bindings = append(b.Bindings[:3], "&macro_param_1to1", "&kp MACRO_PLACEHOLDER", "&macro_wait_time 20", "&macro_release", "&kp LCTRL")
 	})
-	mustContain(t, out, "      bindings\n        = <&macro_press>\n        , <&kp LSHFT>\n        , <&macro_tap>\n        , <&macro_param_1to1 &kp MACRO_PLACEHOLDER>\n        , <&macro_wait_time 20>\n        , <&macro_release>\n        , <&kp LSHFT>\n        ;")
+	mustContain(t, out, "      bindings\n        = <&macro_press>\n        , <&kp LCTRL>\n        , <&macro_tap>\n        , <&macro_param_1to1 &kp MACRO_PLACEHOLDER>\n        , <&macro_wait_time 20>\n        , <&macro_release>\n        , <&kp LCTRL>\n        ;")
 
 	// Inline style, and switching a macro to take a parameter.
 	out, _ = editFixture(t, "wide.keymap", func(km *Keymap) {
@@ -280,7 +280,7 @@ func TestConditionalLayers(t *testing.T) {
 	mustContain(t, out, "\tconditional_layers {\n\t\tcompatible = \"zmk,conditional-layers\";\n\n\t\ttri {")
 
 	out, _ = editFixture(t, "corne.keymap", func(km *Keymap) { km.ConditionalLayers = nil })
-	mustNotContain(t, out, "tri_layer")
+	mustNotContain(t, out, "num_nav_adjust")
 }
 
 func TestReorderLayersKeepsComments(t *testing.T) {

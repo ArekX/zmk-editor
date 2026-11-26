@@ -1,6 +1,6 @@
 import { parseParam, type BindNode } from "@/lib/zmk/bindings"
 import type { Catalog } from "@/lib/zmk/catalog"
-import { MODIFIER_FNS } from "@/lib/zmk/keycodes"
+import { MODIFIER_FNS, shortestName } from "@/lib/zmk/keycodes"
 
 // A standard US ANSI keyboard for picking key codes visually.
 
@@ -120,7 +120,7 @@ export function extraKeyGroups(catalog: Catalog): KeyGroup[] {
     if (kc.isModifierFn || kc.isModifier || seen.has(kc.aliases)) continue
     seen.add(kc.aliases)
     if (kc.aliases.some((a) => shown.has(a))) continue
-    const code = [...kc.aliases].sort((a, b) => a.length - b.length)[0]
+    const code = shortestName(kc.aliases)
     const label = kc.symbol !== code ? kc.symbol : kc.description.replace(/\s*\(.*\)$/, "")
     const title =
       kc.context === "Keyboard"

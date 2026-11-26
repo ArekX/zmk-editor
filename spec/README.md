@@ -1,6 +1,6 @@
 # ZMK Editor - Spec
 
-A local, single-binary visual editor for ZMK keymaps that works on git repositories (clone, pull, commit, push) and fetches firmware built by GitHub Actions. Successor to the sunset nickcoutsos/keymap-editor, keeping its core look (layer list on the left, keyboard drawn from the physical layout, small behavior tag plus big legend on every key) with a modernized UI.
+A local, single-binary visual editor for ZMK keymaps that works on git repositories (clone, pull, commit, push) and fetches firmware built by GitHub Actions. Based on nickcoutsos/keymap-editor, keeping its core look (layer list on the left, keyboard drawn from the physical layout, small behavior tag plus big legend on every key) with a modernized UI.
 
 ## How to read this spec
 

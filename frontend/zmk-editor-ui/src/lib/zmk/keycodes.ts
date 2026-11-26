@@ -14,22 +14,50 @@ export interface Keycode {
 
 // Nicer glyphs than the catalogue's for common keys.
 const SYMBOLS: Record<string, string> = {
-  LCTRL: "⌃", RCTRL: "⌃", LC: "⌃", RC: "⌃",
-  LSHFT: "⇧", RSHFT: "⇧", LS: "⇧", RS: "⇧",
-  LALT: "⌥", RALT: "⌥", LA: "⌥", RA: "⌥",
-  LGUI: "⌘", RGUI: "⌘", LG: "⌘", RG: "⌘",
-  BSPC: "⌫", DEL: "⌦", RET: "⏎", SPACE: "␣", TAB: "⇥",
-  ESC: "Esc", CAPS: "Caps",
-  LEFT: "←", RIGHT: "→", UP: "↑", DOWN: "↓",
-  PG_UP: "PgUp", PG_DN: "PgDn", HOME: "Home", END: "End", INS: "Ins",
-  C_VOL_UP: "🔊", C_VOL_DN: "🔉", C_MUTE: "🔇",
-  C_PP: "⏯", C_NEXT: "⏭", C_PREV: "⏮", C_STOP: "⏹",
-  C_BRI_UP: "☀+", C_BRI_DN: "☀-",
+  LCTRL: "⌃",
+  RCTRL: "⌃",
+  LC: "⌃",
+  RC: "⌃",
+  LSHFT: "⇧",
+  RSHFT: "⇧",
+  LS: "⇧",
+  RS: "⇧",
+  LALT: "⌥",
+  RALT: "⌥",
+  LA: "⌥",
+  RA: "⌥",
+  LGUI: "⌘",
+  RGUI: "⌘",
+  LG: "⌘",
+  RG: "⌘",
+  BSPC: "⌫",
+  DEL: "⌦",
+  RET: "⏎",
+  SPACE: "␣",
+  TAB: "⇥",
+  ESC: "Esc",
+  CAPS: "Caps",
+  LEFT: "←",
+  RIGHT: "→",
+  UP: "↑",
+  DOWN: "↓",
+  PG_UP: "PgUp",
+  PG_DN: "PgDn",
+  HOME: "Home",
+  END: "End",
+  INS: "Ins",
+  C_VOL_UP: "🔊",
+  C_VOL_DN: "🔉",
+  C_MUTE: "🔇",
+  C_PP: "⏯",
+  C_NEXT: "⏭",
+  C_PREV: "⏮",
+  C_STOP: "⏹",
+  C_BRI_UP: "☀+",
+  C_BRI_DN: "☀-",
   ...Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`N${i}`, String(i)])),
   ...Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`NUMBER_${i}`, String(i)])),
 }
-
-const MOD_FN = /^(.+?)\(code\)$/
 
 // "# [Hash / Pound]", "- [Minus] and _ [Underscore]", "ろ (International 1)",
 // keypad "1": the character the key types, from the catalogue description.
@@ -40,42 +68,49 @@ function descriptionSymbol(description: string): string | undefined {
   return description.match(DESC_SYMBOL)?.[1]
 }
 
-function shortest(names: string[]): string {
-  return [...names].sort((a, b) => a.length - b.length)[0]
+/** The shortest of several names (ties keep the first): LPAR over LEFT_PARENTHESIS. */
+export function shortestName(names: string[]): string {
+  return names.reduce((best, n) => (n.length < best.length ? n : best))
 }
 
-/** Expands the ZMK keycode catalogue into one entry per alias. */
+// Modifier keys list their function form as a name too: "LC(code)".
+const FN_SUFFIX = "(code)"
+
+/**
+ * Turns the catalogue (one record per key, listing all its names) into a
+ * lookup entry per name. A modifier key also yields its modifier function
+ * (LCTRL -> LC), which wraps another key code.
+ */
 export function normalizeKeycodes(raw: RawKeycode[]): Keycode[] {
-  const out: Keycode[] = []
-  for (const k of raw) {
-    const aliases = k.names.filter((n) => !MOD_FN.test(n))
-    const fn = k.names.map((n) => n.match(MOD_FN)).find(Boolean)
-    const short = shortest(aliases)
-    const symbol = SYMBOLS[short] ?? k.symbol ?? descriptionSymbol(k.description) ?? short
-    for (const code of aliases) {
-      out.push({
-        code,
-        aliases,
-        description: k.description,
-        context: k.context,
-        symbol: SYMBOLS[code] ?? symbol,
-        isModifierFn: false,
-        isModifier: !!fn,
-      })
-    }
-    if (fn) {
-      out.push({
-        code: fn[1],
-        aliases: [fn[1]],
-        description: `${k.description} + key`,
-        context: k.context,
-        symbol: SYMBOLS[fn[1]] ?? symbol,
-        isModifierFn: true,
+  return raw.flatMap((record) => {
+    const keyNames = record.names.filter((n) => !n.endsWith(FN_SUFFIX))
+    const fnName = record.names.find((n) => n.endsWith(FN_SUFFIX))?.slice(0, -FN_SUFFIX.length)
+    const display = shortestName(keyNames)
+    const fallback = SYMBOLS[display] ?? record.symbol ?? descriptionSymbol(record.description) ?? display
+    const shared = { description: record.description, context: record.context }
+
+    const keys: Keycode[] = keyNames.map((code) => ({
+      ...shared,
+      code,
+      aliases: keyNames,
+      symbol: SYMBOLS[code] ?? fallback,
+      isModifier: fnName !== undefined,
+      isModifierFn: false,
+    }))
+    if (fnName === undefined) return keys
+    return [
+      ...keys,
+      {
+        ...shared,
+        code: fnName,
+        aliases: [fnName],
+        description: `${record.description} + key`,
+        symbol: SYMBOLS[fnName] ?? fallback,
         isModifier: false,
-      })
-    }
-  }
-  return out
+        isModifierFn: true,
+      },
+    ]
+  })
 }
 
 /** The eight modifier functions in display order. */

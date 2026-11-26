@@ -6,17 +6,16 @@ A visual editor for [ZMK](https://zmk.dev) keymaps that runs on your own machine
 
 ## Based on keymap-editor
 
-ZMK Editor is a successor to [**keymap-editor**](https://github.com/nickcoutsos/keymap-editor) by [Nick Coutsos](https://github.com/nickcoutsos), the browser-based ZMK keymap editor that many ZMK users relied on. Its source is no longer being updated, so this project carries the idea forward.
+ZMK Editor is based on [**keymap-editor**](https://github.com/nickcoutsos/keymap-editor) by [Nick Coutsos](https://github.com/nickcoutsos), the browser-based ZMK keymap editor. It follows keymap-editor's design: the layer list on the left, the keyboard drawn from its physical layout with rotated keys, a small behavior tag and a big legend on every key, encoders under the keyboard, and keymap-editor's layout JSON format.
 
-It keeps the core of how keymap-editor looks and works: the layer list on the left, the keyboard drawn from its physical layout with rotated keys, a small behavior tag and a big legend on every key, encoders under the keyboard, and keymap-editor's layout JSON format.
-
-ZMK Editor is a new implementation and does not reuse keymap-editor's source code. Credit for the concept and design goes to keymap-editor; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+It is a new implementation in Go and TypeScript and does not reuse keymap-editor's source code. Its key code and built-in behavior data started from keymap-editor's. Credit for the concept and design goes to keymap-editor; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Features
 
 - **Works on your repositories.** Add as many zmk-config repositories as you like: clone over SSH or HTTPS, or open a checkout you already have. Git runs with your own keys, credentials and identity.
 - **Edits the `.keymap` file itself.** Only the bindings, names and combos you change are rewritten. Comments, formatting, includes, macros and behavior definitions stay exactly as they were, and a save that changes nothing leaves the file byte-for-byte identical.
-- **Layers.** Add, rename, duplicate, delete and reorder layers (drag them); references such as `&mo 2`, layer-taps, combo layers, conditional layers and `#define NAV 2` are renumbered for you. Layer names instead of numbers, hold/tap legends, symbols on keycaps (`!`, `@`, `#` rather than `EXCL`, `AT`, `HASH`), colour swatches for `RGB_COLOR_HSB(...)`, encoder (sensor) bindings.
+- **Layers.** Add, rename, duplicate, delete and reorder layers (drag them); references such as `&mo 2`, layer-taps, combo layers, conditional layers and `#define NAV 2` are renumbered for you. Encoder (sensor) bindings are edited per layer.
+- **Readable keycaps.** Layer names instead of numbers, hold and tap legends, symbols instead of key code names (`!`, `@`, `#` rather than `EXCL`, `AT`, `HASH`), and colour swatches for `RGB_COLOR_HSB(...)`.
 - **Pick keys the easy way.** Click a key to change it, then:
   - pick on a full-size keyboard (with numpad and media keys) where Ctrl, Shift, Alt and GUI work like real modifiers: Ctrl + Shift + A becomes `LC(LS(A))`;
   - find every other ZMK key code (F13-F24, international, media, app launch keys, ...) on the "Other keys" tab, with a filter;
@@ -87,7 +86,16 @@ The server only listens on loopback and only answers requests addressed to `loca
 
 ### Physical layouts
 
-To draw your keyboard, the editor looks for, in order: a custom layout you pasted in (Physical layout in the `...` menu), a `<keymap name>.json` or `info.json` next to the keymap, a `zmk,physical-layout` devicetree node in the repository, and otherwise a grid built from the line structure of your first layer. Layout JSON uses keymap-editor's format:
+To draw your keyboard, the editor uses the first of these it finds:
+
+1. a custom layout you pasted in (Physical layout in the `...` menu);
+2. a `<keymap name>.json` or `info.json` next to the keymap;
+3. a `zmk,physical-layout` devicetree node in the repository;
+4. the layout of the keyboard in ZMK itself (80 keyboards built in, matched by keymap name and key count);
+5. the repository's `zmk,matrix-transform`;
+6. a grid built from the line structure of your first layer.
+
+Layout JSON uses keymap-editor's format:
 
 ```json
 {

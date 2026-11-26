@@ -25,8 +25,6 @@ Run `make check` from the repo root. Everything must pass: `go build`, `go vet`,
 
 **Date:** YYYY-MM-DD
 
-**User request:** the user's words, quoted.
-
 ## What landed
 Specific files, behavior, API and schema changes.
 
@@ -36,5 +34,7 @@ The reasoning, including constraints discovered along the way.
 ## Alternatives considered
 (Only when alternatives were meaningfully weighed.)
 ```
+
+Record only the implementation: what the code does now and why. No conversation history, quotes, superseded attempts, release or documentation chores, or how the change was checked.
 
 Spec files are not edited here; `/consolidate` folds decisions back into `spec/` and the `CLAUDE.md` files later.

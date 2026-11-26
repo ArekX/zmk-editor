@@ -1,6 +1,7 @@
 import type { PickerOption } from "@/components/common/ValuePicker"
 import type { BehaviorDef, Catalog } from "@/lib/zmk/catalog"
 import type { ParamSpec } from "@/lib/zmk/params"
+import { shortestName } from "@/lib/zmk/keycodes"
 
 const SYSTEM = new Set([
   "&bt",
@@ -44,7 +45,7 @@ export function keycodeOptions(catalog: Catalog, modsOnly: boolean): PickerOptio
   for (const k of catalog.keycodes) {
     if (k.isModifierFn) continue
     if (modsOnly && !k.isModifier) continue
-    const primary = [...k.aliases].sort((a, b) => a.length - b.length)[0]
+    const primary = shortestName(k.aliases)
     if (seen.has(primary)) continue
     seen.add(primary)
     options.push({

@@ -7,7 +7,7 @@ This file provides project-wide guidance to Claude Code (claude.ai/code) when wo
 
 ## What this is
 
-**ZMK Editor** is a single-user local web app for editing [ZMK](https://zmk.dev) keymaps, a successor to the sunset [nickcoutsos/keymap-editor](https://github.com/nickcoutsos/keymap-editor). Instead of a GitHub App integration it works on **git repositories**: the user registers any number of zmk-config repositories (cloned by the app over SSH/HTTPS, or an existing local checkout), edits `.keymap` files visually, saves them to the working tree, and commits / pulls / pushes with their own git. A **GitHub integration** lists GitHub Actions builds of the current branch and downloads their firmware artifacts (and can copy a `.uf2` onto a mounted bootloader drive).
+**ZMK Editor** is a single-user local web app for editing [ZMK](https://zmk.dev) keymaps, based on [nickcoutsos/keymap-editor](https://github.com/nickcoutsos/keymap-editor). Instead of a GitHub App integration it works on **git repositories**: the user registers any number of zmk-config repositories (cloned by the app over SSH/HTTPS, or an existing local checkout), edits `.keymap` files visually, saves them to the working tree, and commits / pulls / pushes with their own git. A **GitHub integration** lists GitHub Actions builds of the current branch and downloads their firmware artifacts (and can copy a `.uf2` onto a mounted bootloader drive).
 
 Ships as **one Go binary** with the React frontend embedded via `go:embed`. One SQLite file. One data directory (`~/.zmk-editor`, override with `--data-dir` or `ZMK_EDITOR_DATA_DIR`) holding the database, managed clones (`repos/`) and the firmware cache (`firmware/`). No accounts, no login, binds to loopback only.
 

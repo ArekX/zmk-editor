@@ -2,8 +2,6 @@
 
 **Date:** 2026-11-25
 
-**User request:** "could we also add a change that if you go into a repository that we do a check against remote to see if there are some changes not there and warn the user with a dialog that they should pull them?"
-
 ## What landed
 
 - **Backend.**

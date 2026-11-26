@@ -2,7 +2,7 @@
 
 ## nickcoutsos/keymap-editor
 
-ZMK Editor is a successor to [keymap-editor](https://github.com/nickcoutsos/keymap-editor) by Nick Coutsos. Its user interface concept and look (layer list, keyboard drawn from the physical layout, behavior tag plus legend on each key, key-unit geometry, the `info.json`-style layout format) are the model for this project, and the built-in behavior list in `internal/zmkdata/behaviors.json` started from its behavior data. ZMK Editor is a new implementation (Go and TypeScript) and does not copy its source code.
+ZMK Editor is based on [keymap-editor](https://github.com/nickcoutsos/keymap-editor) by Nick Coutsos. Its user interface concept and look (layer list, keyboard drawn from the physical layout, behavior tag plus legend on each key, key-unit geometry, the `info.json`-style layout format) are the model for this project, the built-in behavior list in `internal/zmkdata/behaviors.json` started from its behavior data, and `internal/zmkdata/keycodes.json` is its JSON copy of ZMK's key code table (see below). ZMK Editor is a new implementation (Go and TypeScript) and does not copy its source code.
 
 ```
 MIT License
@@ -30,7 +30,9 @@ SOFTWARE.
 
 ## ZMK keycode and behavior data
 
-`internal/zmkdata/keycodes.json` and the original behavior data come from the [ZMK](https://zmk.dev) documentation, copyright (c) 2020 The ZMK Contributors, MIT licensed. The full license text is in [internal/zmkdata/LICENSE](internal/zmkdata/LICENSE).
+`internal/zmkdata/keycodes.json` is keymap-editor's JSON copy (`api/services/zmk/data/zmk-keycodes.json`) of the key code table in the [ZMK](https://zmk.dev) documentation (`docs/src/data/hid.js`), including the `symbol` fields keymap-editor added. The ZMK data is copyright (c) 2020 The ZMK Contributors, MIT licensed; the full license text is in [internal/zmkdata/LICENSE](internal/zmkdata/LICENSE). keymap-editor's additions are under its MIT license above.
+
+The behavior list in `internal/zmkdata/behaviors.json` started from keymap-editor's `zmk-behaviors.json`, which describes ZMK's built-in behaviors; it has since been extended (descriptions, encoder and macro behaviors, macro control steps).
 
 ## Demo keymap
 

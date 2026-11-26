@@ -27,32 +27,32 @@ func TestParseCorne(t *testing.T) {
 	if base.ID != "base" || len(base.Bindings) != 42 {
 		t.Fatalf("base: %s %d", base.ID, len(base.Bindings))
 	}
-	if base.Bindings[13] != "&hml LSHFT A" {
+	if base.Bindings[13] != "&hrm_l LGUI A" {
 		t.Fatalf("binding 13: %q", base.Bindings[13])
 	}
-	if base.Bindings[40] != "&rgblayer 2 RGB_COLOR_HSB_VAL(180,70,50)" {
+	if base.Bindings[40] != "&lyr_rgb 2 RGB_COLOR_HSB_VAL(200,80,60)" {
 		t.Fatalf("binding 40: %q", base.Bindings[40])
 	}
 	if got := base.Shape; len(got) != 4 || got[0] != 12 || got[3] != 6 {
 		t.Fatalf("shape: %v", got)
 	}
-	if len(base.SensorBindings) != 2 || base.SensorBindings[1] != "&rgbknob RGB_BRI RGB_BRD" {
+	if len(base.SensorBindings) != 2 || base.SensorBindings[1] != "&enc_rgb RGB_HUI RGB_HUD" {
 		t.Fatalf("sensor: %v", base.SensorBindings)
 	}
 	if km.Layers[2].SensorBindings != nil {
-		t.Fatal("lower should have no sensor bindings")
+		t.Fatal("nav should have no sensor bindings")
 	}
-	if len(km.Combos) != 7 || km.Combos[0].KeyPositions[1] != 3 || km.Combos[0].Binding != "&kp TAB" {
+	if len(km.Combos) != 7 || km.Combos[0].KeyPositions[1] != 2 || km.Combos[0].Binding != "&kp ESC" {
 		t.Fatalf("combos: %+v", km.Combos)
 	}
 	refs := map[string]Behavior{}
 	for _, b := range km.Behaviors {
 		refs[b.Ref] = b
 	}
-	if refs["&hml"].BindingCells != 2 || refs["&hml"].Kind != "hold-tap" {
-		t.Fatalf("hml: %+v", refs["&hml"])
+	if refs["&hrm_l"].BindingCells != 2 || refs["&hrm_l"].Kind != "hold-tap" {
+		t.Fatalf("hrm_l: %+v", refs["&hrm_l"])
 	}
-	if refs["&rgbknob"].Kind != "sensor" || refs["&greeting"].Kind != "macro" {
+	if refs["&enc_rgb"].Kind != "sensor" || refs["&gg"].Kind != "macro" {
 		t.Fatal("behavior kinds")
 	}
 	if len(km.ConditionalLayers) != 1 || km.ConditionalLayers[0].Then != 3 {
@@ -77,7 +77,7 @@ func TestApplyEditsAndAdds(t *testing.T) {
 	km, _, _ := Parse(src)
 	km.Layers[1].Bindings[0] = "&kp ESC"
 	km.Layers[2].Name = "Symbols"
-	km.Layers[2].SensorBindings = []string{"&volknob"}
+	km.Layers[2].SensorBindings = []string{"&enc_vol"}
 	km.Layers = append(km.Layers[:4], km.Layers[4:]...) // keep
 	km.Layers = append(km.Layers, Layer{Name: "Nav", Bindings: make42("&trans")})
 	km.Combos = km.Combos[1:]
@@ -102,7 +102,7 @@ func TestApplyEditsAndAdds(t *testing.T) {
 	if re.Layers[2].Name != "Symbols" || len(re.Layers[2].SensorBindings) != 1 {
 		t.Fatalf("lower: %+v", re.Layers[2])
 	}
-	if len(re.Combos) != 7 || re.Combos[0].ID != "ctrl" || re.Combos[0].KeyPositions[0] != 25 {
+	if len(re.Combos) != 7 || re.Combos[0].ID != "ent" || re.Combos[0].KeyPositions[0] != 25 {
 		t.Fatalf("combos: %+v", re.Combos)
 	}
 	last := re.Combos[6]
@@ -110,12 +110,12 @@ func TestApplyEditsAndAdds(t *testing.T) {
 		t.Fatalf("new combo: %+v", last)
 	}
 	// Untouched parts survive byte-for-byte.
-	for _, keep := range []string{"// dt-formatter: indent", "hold-trigger-key-positions = <6 7 8", "&kp TAB    &kp Q         &kp W"} {
+	for _, keep := range []string{"// Sample Corne", "hold-trigger-key-positions = <6 7 8", "&kp ESC       &kp Q          &kp W"} {
 		if !strings.Contains(out, keep) {
 			t.Fatalf("lost %q", keep)
 		}
 	}
-	if strings.Contains(out, "tab {") {
+	if strings.Contains(out, "escape {") {
 		t.Fatal("deleted combo still present")
 	}
 	t.Log(out)
@@ -130,7 +130,7 @@ func TestDeleteLayer(t *testing.T) {
 		t.Fatal(err)
 	}
 	re, _, _ := Parse(out)
-	if len(re.Layers) != 4 || re.Layers[3].ID != "autoshift" {
+	if len(re.Layers) != 4 || re.Layers[3].ID != "game" {
 		t.Fatalf("%+v", re.Layers)
 	}
 }
