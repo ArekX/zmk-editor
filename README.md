@@ -42,7 +42,37 @@ ZMK Editor is based on [**keymap-editor**](https://github.com/nickcoutsos/keymap
 
 ## Getting started
 
-### Build
+### Download
+
+Pre-built binaries for macOS, Linux and Windows are on the [releases page](https://github.com/ArekX/zmk-editor/releases/latest). Downloading with `curl` instead of a browser means macOS does not quarantine the file, so it runs without Gatekeeper warnings.
+
+macOS (Apple Silicon):
+
+```bash
+curl -fL -o zmk-editor https://github.com/ArekX/zmk-editor/releases/latest/download/zmk-editor-darwin-arm64
+chmod +x zmk-editor
+./zmk-editor
+```
+
+For an Intel Mac use `zmk-editor-darwin-amd64`, and on Linux `zmk-editor-linux-amd64` or `zmk-editor-linux-arm64`, with the same commands.
+
+Windows (PowerShell):
+
+```powershell
+curl.exe -fL -o zmk-editor.exe https://github.com/ArekX/zmk-editor/releases/latest/download/zmk-editor-windows-amd64.exe
+.\zmk-editor.exe
+```
+
+The editor opens in your browser at `http://127.0.0.1:7373` (or the next free port). To check the download, compare it with `SHA256SUMS` from the same release (on Linux use `sha256sum` instead of `shasum -a 256`):
+
+```bash
+curl -fsSL https://github.com/ArekX/zmk-editor/releases/latest/download/SHA256SUMS | grep darwin-arm64
+shasum -a 256 zmk-editor
+```
+
+If you downloaded the macOS binary with a browser instead, remove the quarantine flag once: `xattr -d com.apple.quarantine zmk-editor-darwin-*`.
+
+### Build from source
 
 Requires Go 1.26 and Node 24 (see `.tool-versions`).
 
@@ -53,7 +83,7 @@ make build
 ./bin/zmk-editor
 ```
 
-The editor opens in your browser at `http://127.0.0.1:7373` (or the next free port). Cross-compiled binaries for macOS, Linux and Windows:
+Cross-compiled binaries for macOS, Linux and Windows:
 
 ```bash
 make release   # -> bin/release/
