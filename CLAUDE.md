@@ -17,7 +17,7 @@ The full spec lives in [spec/](spec/): read [spec/README.md](spec/README.md) fir
 
 - **Backend**: Go module `github.com/ArekX/zmk-editor` at the repo root. Packages under [internal/](internal/): `config`, `db`, `store`, `git`, `dts` (lenient devicetree parser with byte offsets), `keymap` (ZMK model extraction + in-place writer), `layout` (physical layout resolution), `repos` (repository service), `github` (Actions API client), `firmware` (artifact cache, UF2 flashing), `zmkdata` (embedded behavior/keycode catalogue), `httpapi`, `listen`, `browser`, `timeutil`. Entry point [cmd/zmk-editor/main.go](cmd/zmk-editor/main.go).
 - **Frontend**: [frontend/zmk-editor-ui/](frontend/zmk-editor-ui/) - Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui (radix-maia) + hugeicons + TanStack Query + react-router. Routes: `/` (repositories) and `/repos/:id` (editor; URL params `keymap`, `tab`, `layer`). Editor tabs: Layers, Combos, Behaviors, Changes; the Firmware sheet opens from the top bar.
-- **Tooling**: `.tool-versions` pins `golang 1.26.6` and `nodejs 24.19.0` (asdf). `Makefile` has `make dev`, `make build`, `make release`, `make check`.
+- **Tooling**: `.tool-versions` pins `golang 1.27.4` and `nodejs 26.13.1` (asdf). `Makefile` has `make dev`, `make build`, `make release`, `make check`.
 
 Treat the spec as the source of truth when extending an area for the first time. Re-read the relevant spec file before writing code; when implementation has drifted from spec, log a decision and update the spec via `/consolidate`.
 

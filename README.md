@@ -74,7 +74,7 @@ If you downloaded the macOS binary with a browser instead, remove the quarantine
 
 ### Build from source
 
-Requires Go 1.26 and Node 24 (see `.tool-versions`).
+Requires Go 1.27 and Node 26 LTS (see `.tool-versions`).
 
 ```bash
 git clone git@github.com:ArekX/zmk-editor.git

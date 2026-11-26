@@ -1,6 +1,6 @@
 module github.com/ArekX/zmk-editor
 
-go 1.26.6
+go 1.27.4
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.20.1

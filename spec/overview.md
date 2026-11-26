@@ -18,6 +18,6 @@
 
 ## Stack
 
-- Go 1.26, stdlib `net/http`, `modernc.org/sqlite`, `golang-migrate`. Git via the `git` CLI.
+- Go 1.27, stdlib `net/http`, `modernc.org/sqlite`, `golang-migrate`. Git via the `git` CLI.
 - React 19, TypeScript, Vite, Tailwind v4, shadcn/ui (radix), hugeicons, TanStack Query, react-router, cmdk, sonner.
 - Built-in keycode catalogue from the ZMK docs (MIT, `internal/zmkdata/LICENSE`).
