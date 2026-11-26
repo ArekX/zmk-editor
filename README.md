@@ -10,16 +10,6 @@ ZMK Editor is a successor to [**keymap-editor**](https://github.com/nickcoutsos/
 
 It keeps the core of how keymap-editor looks and works: the layer list on the left, the keyboard drawn from its physical layout with rotated keys, a small behavior tag and a big legend on every key, encoders under the keyboard, and keymap-editor's layout JSON format.
 
-What changes:
-
-| keymap-editor | ZMK Editor |
-| --- | --- |
-| Hosted web app with a GitHub App integration | Local app, one executable, your data stays on your machine |
-| One GitHub repository at a time through the GitHub API | Any number of repositories, cloned over SSH/HTTPS or used in place, with real `git` (pull, push, branches, diff) |
-| Firmware builds are out of scope | Lists GitHub Actions builds, downloads artifacts, and flashes the keyboard over USB in one click |
-| Edits behaviors, macros, combos and conditional layers | The same, plus layer reordering with renumbering, key swaps across layers, multi-select, copy/paste and image export |
-| JavaScript (Node + React) | Go backend with an embedded React frontend |
-
 ZMK Editor is a new implementation and does not reuse keymap-editor's source code. Credit for the concept and design goes to keymap-editor; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Features
