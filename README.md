@@ -8,8 +8,6 @@ A visual editor for [ZMK](https://zmk.dev) keymaps that runs on your own machine
 
 ZMK Editor is based on [**keymap-editor**](https://github.com/nickcoutsos/keymap-editor) by [Nick Coutsos](https://github.com/nickcoutsos), the browser-based ZMK keymap editor. It follows keymap-editor's design: the layer list on the left, the keyboard drawn from its physical layout with rotated keys, a small behavior tag and a big legend on every key, encoders under the keyboard, and keymap-editor's layout JSON format.
 
-It is a new implementation in Go and TypeScript and does not reuse keymap-editor's source code. Its key code and built-in behavior data started from keymap-editor's. Credit for the concept and design goes to keymap-editor; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
 ## Features
 
 - **Works on your repositories.** Add as many zmk-config repositories as you like: clone over SSH or HTTPS, or open a checkout you already have. Git runs with your own keys, credentials and identity.
